@@ -254,6 +254,36 @@
     .summary img{width:120px;margin:18px auto 0;mix-blend-mode:multiply}
     .done{text-align:center;padding:20px 0}
     .form-card.done{padding:34px}
+
+    /* pagamento no fim da inscrição */
+    .pay{background:#fff;color:var(--text);border-radius:26px;padding:24px;text-align:center}
+    .pay h3{font-size:clamp(24px,3vw,30px);color:var(--blue);margin-bottom:6px}
+    .pay .sub{margin:0 0 14px;color:var(--muted)}
+    .pay-stage{position:relative;background:radial-gradient(circle at 50% 45%,#fff6d6 0 46%,transparent 47%),linear-gradient(#2f86b5,#26408f);border-radius:22px;height:210px;overflow:hidden}
+    .pay-stage svg{position:absolute;inset:0;width:100%;height:100%}
+    .pay .frase{min-height:44px;font:700 23px/1.1 var(--hand);color:var(--blue);margin:12px 0 4px;transition:opacity .4s}
+    .pay .status{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 14px;font:700 16px var(--display);color:var(--orange)}
+    .pay .dots i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--orange);margin:0 2px;animation:dotp 1.2s infinite}
+    .pay .dots i:nth-child(2){animation-delay:.2s}.pay .dots i:nth-child(3){animation-delay:.4s}
+    @keyframes dotp{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+    .pix-box{background:var(--paper);border-radius:18px;padding:16px;text-align:left}
+    .pix-box .val{font:700 30px var(--display);color:var(--blue)}
+    .pix-chave{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 12px;margin:8px 0;font-weight:800;font-size:15px;overflow-wrap:anywhere}
+    .pix-chave .btn{flex:none;white-space:nowrap}
+    .pix-box small{display:block;color:var(--muted);font-size:14px}
+    .pay ul{text-align:left;margin:8px 0 0;padding-left:20px}
+    .pay-ok h3{color:var(--green)}
+    .pay-stage .pg-r{transform-origin:200px 160px;animation:vira 2.4s ease-in-out infinite}
+    @keyframes vira{0%,55%{transform:scaleX(1)}75%,100%{transform:scaleX(-1)}}
+    .pay-stage .boca{transform-origin:200px 103px;animation:fala .5s ease-in-out infinite alternate}
+    @keyframes fala{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+    .pay-stage .olhos{transform-origin:200px 90px;animation:olho 4s infinite}
+    @keyframes olho{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+    .pay-stage .corpo{transform-origin:200px 230px;animation:balanca 3s ease-in-out infinite}
+    @keyframes balanca{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+    .pay-stage .estrela{animation:sobe 3s ease-in infinite;opacity:0}
+    @keyframes sobe{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translate(var(--dx),-120px) scale(1.1);opacity:0}}
+    .pay-ok .estrela{animation-duration:1.5s}.pay-ok .pg-r{animation:none}
     .done h3{font-size:30px;color:var(--green);margin-bottom:10px}
 
     /* faq */
@@ -541,7 +571,7 @@
     <div class="wrap">
       <div class="section-head reveal">
         <div><p class="kicker">Sua vaga começa aqui</p><h2>Inscrição.</h2></div>
-        <p>Leva 2 minutos. Ao enviar, sua vaga fica registrada e abre o WhatsApp do Varal de Histórias para combinar o pagamento.</p>
+        <p>Leva 2 minutos. Ao enviar, aparece o Pix para você pagar na hora e garantir a sua vaga.</p>
       </div>
       <div class="signup-grid">
         <form class="form-card" id="signup" novalidate>
@@ -574,6 +604,152 @@
           </div>
           <div style="margin-top:26px"><button class="btn block" type="submit" id="btn-enviar">Enviar inscrição</button></div>
         </form>
+        <div class="pay" id="pg-pagar" hidden>
+          <h3>Falta só o pagamento!</h3>
+          <p class="sub" id="pg-ola">Sua inscrição foi recebida.</p>
+          <div class="pay-stage" aria-hidden="true"><svg viewBox="0 0 400 230" aria-hidden="true">
+                <!-- estrelas e letras saindo do livro -->
+                <g id="estrelas">
+                  <g class="estrela" style="--dx:-60px;animation-delay:0s"><path d="M150 150l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#f7c948"/></g>
+                  <g class="estrela" style="--dx:40px;animation-delay:.8s"><text x="240" y="150" font-family="Caveat" font-size="26" fill="#ff6b6b">era uma vez</text></g>
+                  <g class="estrela" style="--dx:-20px;animation-delay:1.6s"><path d="M200 140l3 7 8 1-6 5 2 8-7-5-7 5 2-8-6-5 8-1z" fill="#fff"/></g>
+                  <g class="estrela" style="--dx:70px;animation-delay:2.2s"><circle cx="210" cy="150" r="6" fill="#3aa655"/></g>
+                  <g class="estrela" style="--dx:-80px;animation-delay:1.2s"><path d="M175 150c0-6 8-8 10-2 2-6 10-4 10 2 0 6-10 12-10 12s-10-6-10-12z" fill="#ff6b6b"/></g>
+                </g>
+                <g class="corpo">
+                  <!-- banquinho -->
+                  <rect x="150" y="212" width="100" height="10" rx="5" fill="#1f2a44" opacity=".25"/>
+                  <!-- vestido -->
+                  <path d="M160 215 Q170 140 200 132 Q230 140 240 215 Z" fill="#ff6b6b"/>
+                  <path d="M170 215 Q178 175 200 170 Q222 175 230 215 Z" fill="#f28c28" opacity=".35"/>
+                  <!-- pescoço e cabeça -->
+                  <rect x="193" y="112" width="14" height="22" rx="6" fill="#e9b48f"/>
+                  <!-- cabelo atrás -->
+                  <path d="M168 92 Q168 52 200 50 Q232 52 232 92 L234 128 Q218 118 214 104 L186 104 Q182 118 166 128 Z" fill="#3b2a24"/>
+                  <circle cx="200" cy="88" r="27" fill="#f2c39f"/>
+                  <!-- coque -->
+                  <circle cx="200" cy="52" r="13" fill="#3b2a24"/>
+                  <path d="M174 80 Q186 60 210 64 Q226 68 228 84 Q214 74 196 76 Q184 78 174 80Z" fill="#3b2a24"/>
+                  <!-- laço -->
+                  <path d="M190 44l-10-6v12zM210 44l10-6v12z" fill="#f7c948"/><circle cx="200" cy="44" r="4" fill="#f7c948"/>
+                  <!-- rosto -->
+                  <g class="olhos"><ellipse cx="190" cy="90" rx="3" ry="4" fill="#1f2a44"/><ellipse cx="210" cy="90" rx="3" ry="4" fill="#1f2a44"/></g>
+                  <circle cx="183" cy="99" r="4.5" fill="#ff6b6b" opacity=".35"/><circle cx="217" cy="99" r="4.5" fill="#ff6b6b" opacity=".35"/>
+                  <ellipse class="boca" cx="200" cy="103" rx="5" ry="4" fill="#9b2c2c"/>
+                  <!-- braços -->
+                  <path d="M168 150 Q150 165 160 178" stroke="#f2c39f" stroke-width="9" fill="none" stroke-linecap="round"/>
+                  <path d="M232 150 Q250 165 240 178" stroke="#f2c39f" stroke-width="9" fill="none" stroke-linecap="round"/>
+                  <!-- livro -->
+                  <path d="M150 158 L200 166 L250 158 L250 188 L200 196 L150 188 Z" fill="#26408f"/>
+                  <path d="M155 160 L198 167 L198 191 L155 184 Z" fill="#fffdf8"/>
+                  <path d="M202 167 L245 160 L245 184 L202 191 Z" fill="#fffdf8"/>
+                  <g class="pg-r"><path d="M202 167 L245 160 L245 184 L202 191 Z" fill="#fff6d6" stroke="#ece1cb"/></g>
+                  <path d="M162 170 L190 174 M162 176 L186 179 M210 172 L238 168 M210 178 L234 174" stroke="#c9d3f5" stroke-width="2" stroke-linecap="round"/>
+                </g>
+              </svg></div>
+          <p class="frase" data-frase>Era uma vez uma menina que adorava ouvir histórias…</p>
+          <div class="pix-box">
+            <small>Valor único</small><div class="val" id="pg-valor">R$ 85</div>
+            <small>Chave Pix (e-mail) do Varal de Histórias</small>
+            <div class="pix-chave"><span id="pg-chave"></span><button class="btn" type="button" id="pg-copiar" style="padding:8px 16px;font-size:15px">Copiar</button></div>
+            <small>Pague no app do seu banco e volte aqui para avisar.</small>
+            <button class="btn block" type="button" id="pg-paguei" style="margin-top:14px;background:var(--green);box-shadow:0 5px 0 #2a7c3f">Já fiz o Pix</button>
+          </div>
+        </div>
+        <div class="pay" id="pg-espera" hidden>
+          <h3>Recebemos seu aviso!</h3>
+          <p class="sub">A equipe do Varal está conferindo o seu Pix.</p>
+          <div class="pay-stage" aria-hidden="true"><svg viewBox="0 0 400 230" aria-hidden="true">
+                <!-- estrelas e letras saindo do livro -->
+                <g id="estrelas">
+                  <g class="estrela" style="--dx:-60px;animation-delay:0s"><path d="M150 150l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#f7c948"/></g>
+                  <g class="estrela" style="--dx:40px;animation-delay:.8s"><text x="240" y="150" font-family="Caveat" font-size="26" fill="#ff6b6b">era uma vez</text></g>
+                  <g class="estrela" style="--dx:-20px;animation-delay:1.6s"><path d="M200 140l3 7 8 1-6 5 2 8-7-5-7 5 2-8-6-5 8-1z" fill="#fff"/></g>
+                  <g class="estrela" style="--dx:70px;animation-delay:2.2s"><circle cx="210" cy="150" r="6" fill="#3aa655"/></g>
+                  <g class="estrela" style="--dx:-80px;animation-delay:1.2s"><path d="M175 150c0-6 8-8 10-2 2-6 10-4 10 2 0 6-10 12-10 12s-10-6-10-12z" fill="#ff6b6b"/></g>
+                </g>
+                <g class="corpo">
+                  <!-- banquinho -->
+                  <rect x="150" y="212" width="100" height="10" rx="5" fill="#1f2a44" opacity=".25"/>
+                  <!-- vestido -->
+                  <path d="M160 215 Q170 140 200 132 Q230 140 240 215 Z" fill="#ff6b6b"/>
+                  <path d="M170 215 Q178 175 200 170 Q222 175 230 215 Z" fill="#f28c28" opacity=".35"/>
+                  <!-- pescoço e cabeça -->
+                  <rect x="193" y="112" width="14" height="22" rx="6" fill="#e9b48f"/>
+                  <!-- cabelo atrás -->
+                  <path d="M168 92 Q168 52 200 50 Q232 52 232 92 L234 128 Q218 118 214 104 L186 104 Q182 118 166 128 Z" fill="#3b2a24"/>
+                  <circle cx="200" cy="88" r="27" fill="#f2c39f"/>
+                  <!-- coque -->
+                  <circle cx="200" cy="52" r="13" fill="#3b2a24"/>
+                  <path d="M174 80 Q186 60 210 64 Q226 68 228 84 Q214 74 196 76 Q184 78 174 80Z" fill="#3b2a24"/>
+                  <!-- laço -->
+                  <path d="M190 44l-10-6v12zM210 44l10-6v12z" fill="#f7c948"/><circle cx="200" cy="44" r="4" fill="#f7c948"/>
+                  <!-- rosto -->
+                  <g class="olhos"><ellipse cx="190" cy="90" rx="3" ry="4" fill="#1f2a44"/><ellipse cx="210" cy="90" rx="3" ry="4" fill="#1f2a44"/></g>
+                  <circle cx="183" cy="99" r="4.5" fill="#ff6b6b" opacity=".35"/><circle cx="217" cy="99" r="4.5" fill="#ff6b6b" opacity=".35"/>
+                  <ellipse class="boca" cx="200" cy="103" rx="5" ry="4" fill="#9b2c2c"/>
+                  <!-- braços -->
+                  <path d="M168 150 Q150 165 160 178" stroke="#f2c39f" stroke-width="9" fill="none" stroke-linecap="round"/>
+                  <path d="M232 150 Q250 165 240 178" stroke="#f2c39f" stroke-width="9" fill="none" stroke-linecap="round"/>
+                  <!-- livro -->
+                  <path d="M150 158 L200 166 L250 158 L250 188 L200 196 L150 188 Z" fill="#26408f"/>
+                  <path d="M155 160 L198 167 L198 191 L155 184 Z" fill="#fffdf8"/>
+                  <path d="M202 167 L245 160 L245 184 L202 191 Z" fill="#fffdf8"/>
+                  <g class="pg-r"><path d="M202 167 L245 160 L245 184 L202 191 Z" fill="#fff6d6" stroke="#ece1cb"/></g>
+                  <path d="M162 170 L190 174 M162 176 L186 179 M210 172 L238 168 M210 178 L234 174" stroke="#c9d3f5" stroke-width="2" stroke-linecap="round"/>
+                </g>
+              </svg></div>
+          <p class="frase" data-frase>Ela abria o livro e as palavras saíam voando…</p>
+          <div class="status" role="status"><span>Aguardando a confirmação</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <p class="help" style="margin:0">Pode deixar esta tela aberta: quando a equipe confirmar, ela muda sozinha. Se fechar, a equipe do Varal te avisa pelo WhatsApp.</p>
+        </div>
+        <div class="pay pay-ok" id="pg-ok" hidden>
+          <h3>Pagamento confirmado!</h3>
+          <p class="sub">Sua vaga no Pronta pra Contar está garantida.</p>
+          <div class="pay-stage" aria-hidden="true"><svg viewBox="0 0 400 230" aria-hidden="true">
+                <!-- estrelas e letras saindo do livro -->
+                <g id="estrelas">
+                  <g class="estrela" style="--dx:-60px;animation-delay:0s"><path d="M150 150l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" fill="#f7c948"/></g>
+                  <g class="estrela" style="--dx:40px;animation-delay:.8s"><text x="240" y="150" font-family="Caveat" font-size="26" fill="#ff6b6b">era uma vez</text></g>
+                  <g class="estrela" style="--dx:-20px;animation-delay:1.6s"><path d="M200 140l3 7 8 1-6 5 2 8-7-5-7 5 2-8-6-5 8-1z" fill="#fff"/></g>
+                  <g class="estrela" style="--dx:70px;animation-delay:2.2s"><circle cx="210" cy="150" r="6" fill="#3aa655"/></g>
+                  <g class="estrela" style="--dx:-80px;animation-delay:1.2s"><path d="M175 150c0-6 8-8 10-2 2-6 10-4 10 2 0 6-10 12-10 12s-10-6-10-12z" fill="#ff6b6b"/></g>
+                </g>
+                <g class="corpo">
+                  <!-- banquinho -->
+                  <rect x="150" y="212" width="100" height="10" rx="5" fill="#1f2a44" opacity=".25"/>
+                  <!-- vestido -->
+                  <path d="M160 215 Q170 140 200 132 Q230 140 240 215 Z" fill="#ff6b6b"/>
+                  <path d="M170 215 Q178 175 200 170 Q222 175 230 215 Z" fill="#f28c28" opacity=".35"/>
+                  <!-- pescoço e cabeça -->
+                  <rect x="193" y="112" width="14" height="22" rx="6" fill="#e9b48f"/>
+                  <!-- cabelo atrás -->
+                  <path d="M168 92 Q168 52 200 50 Q232 52 232 92 L234 128 Q218 118 214 104 L186 104 Q182 118 166 128 Z" fill="#3b2a24"/>
+                  <circle cx="200" cy="88" r="27" fill="#f2c39f"/>
+                  <!-- coque -->
+                  <circle cx="200" cy="52" r="13" fill="#3b2a24"/>
+                  <path d="M174 80 Q186 60 210 64 Q226 68 228 84 Q214 74 196 76 Q184 78 174 80Z" fill="#3b2a24"/>
+                  <!-- laço -->
+                  <path d="M190 44l-10-6v12zM210 44l10-6v12z" fill="#f7c948"/><circle cx="200" cy="44" r="4" fill="#f7c948"/>
+                  <!-- rosto -->
+                  <g class="olhos"><ellipse cx="190" cy="90" rx="3" ry="4" fill="#1f2a44"/><ellipse cx="210" cy="90" rx="3" ry="4" fill="#1f2a44"/></g>
+                  <circle cx="183" cy="99" r="4.5" fill="#ff6b6b" opacity=".35"/><circle cx="217" cy="99" r="4.5" fill="#ff6b6b" opacity=".35"/>
+                  <ellipse class="boca" cx="200" cy="103" rx="5" ry="4" fill="#9b2c2c"/>
+                  <!-- braços -->
+                  <path d="M168 150 Q150 165 160 178" stroke="#f2c39f" stroke-width="9" fill="none" stroke-linecap="round"/>
+                  <path d="M232 150 Q250 165 240 178" stroke="#f2c39f" stroke-width="9" fill="none" stroke-linecap="round"/>
+                  <!-- livro -->
+                  <path d="M150 158 L200 166 L250 158 L250 188 L200 196 L150 188 Z" fill="#26408f"/>
+                  <path d="M155 160 L198 167 L198 191 L155 184 Z" fill="#fffdf8"/>
+                  <path d="M202 167 L245 160 L245 184 L202 191 Z" fill="#fffdf8"/>
+                  <g class="pg-r"><path d="M202 167 L245 160 L245 184 L202 191 Z" fill="#fff6d6" stroke="#ece1cb"/></g>
+                  <path d="M162 170 L190 174 M162 176 L186 179 M210 172 L238 168 M210 178 L234 174" stroke="#c9d3f5" stroke-width="2" stroke-linecap="round"/>
+                </g>
+              </svg></div>
+          <p class="frase">…e foi assim que a sua história começou!</p>
+          <ul><li>O link da aula chega no seu WhatsApp e e-mail.</li><li id="pg-data">A aula é ao vivo, com a Juçara.</li><li>Apostila, histórias e certificado depois da aula.</li></ul>
+          <button class="btn ghost block" type="button" id="pg-nova" style="margin-top:16px">Fazer outra inscrição</button>
+        </div>
         <div class="form-card done" id="done" hidden>
           <h3>Inscrição recebida!</h3>
           <p id="done-txt" style="margin:0 0 18px">Sua vaga está registrada. Agora é só falar com a equipe do Varal pelo WhatsApp para receber os dados de pagamento.</p>
@@ -638,7 +814,7 @@ const CONFIG = {
   caixaPostal: 'Caixa Postal 3224 · CEP 71010-970 · Brasília/DF',
   evento: '2026-12-09T19:30:00-03:00',  // A CONFIRMAR: data e horário da aula ao vivo (null = "Data em breve")
   duracao: '1h30',
-  pix: null,                            // A CONFIRMAR: chave Pix (null = pagamento combinado no WhatsApp)
+  pix: 'varal.historias@gmail.com',     // chave Pix (e-mail) informada pelo Romero em 26/11/2026
   checkout: null,                       // A CONFIRMAR: link de pagamento (Hotmart, Sympla, Mercado Pago…)
   // Lotes — "ate" é o último dia (inclusive); "ateHora" encerra antes do fim do dia. A CONFIRMAR: datas e preços
   // Valor único (alteração 8). "ate" = fim das inscrições. A CONFIRMAR: data e horário da aula
@@ -678,7 +854,7 @@ const CONFIG = {
     ['Tem certificado?', 'Tem. Todos os inscritos recebem o certificado de participação. Por isso pedimos o nome completo do jeito que deve sair nele.'],
     ['Quando é o plantão de dúvidas?', 'No mês seguinte ao curso: 1 hora para você trazer as dúvidas que surgirem ao aplicar as histórias. A data é enviada para os inscritos pelo WhatsApp e por e-mail.'],
     ['Quanto custa?', 'Valor único de R$ 85, com aula ao vivo, apostila, duas histórias completas, certificado e plantão de dúvidas.'],
-    ['Como faço o pagamento?', 'Envie a inscrição pelo formulário. A equipe do Varal de Histórias responde no WhatsApp com os dados de pagamento e, depois da confirmação, com o link da aula.'],
+    ['Como faço o pagamento?', 'Por Pix, no fim da inscrição. Depois de pagar, toque em "Já fiz o Pix": a equipe confere e a sua tela muda para "vaga garantida". O link da aula chega pelo WhatsApp e por e-mail.'],
     ['Vai ter outra turma este ano?', 'Não. Esta é a última oportunidade de 2026 para aprender diretamente com a Juçara.'],
   ],
   ticker: ['Última turma de 2026','1h30 ao vivo','Valor único R$ 85','Plantão de dúvidas','Voz, ritmo e pausas','Gestos e presença'],
@@ -803,7 +979,7 @@ $('#turmas').innerHTML = CONFIG.turmas.map(([f,c])=>`<button class="turma" type=
 $("#canal-grid").innerHTML = CONFIG.videos.map((f,i)=>`<button type="button" data-zoom="assets/${f}" aria-label="Ampliar cena do canal"><img src="assets/${f}" alt="Juçara contando história no estúdio do Varal de Histórias" loading="lazy"></button>`).join('');
 $('#faq-list').innerHTML = CONFIG.faq.map(([q,a])=>`<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('');
 $('#perfil').innerHTML = '<option value="">Selecione</option>' + CONFIG.perfis.map(p=>`<option>${esc(p)}</option>`).join('');
-if(CONFIG.pix) $('#pag-txt').textContent = `Pix: ${CONFIG.pix}. Envie o comprovante pelo WhatsApp depois da inscrição.`;
+if(CONFIG.pix) $('#pag-txt').textContent = `Pix na hora, no fim da inscrição (chave ${CONFIG.pix}). Depois de pagar, é só tocar em "Já fiz o Pix" que a equipe confirma a sua vaga.`;
 
 /* lightbox */
 const lb = $('#lightbox');
@@ -849,7 +1025,9 @@ form.addEventListener('submit', async e=>{
   ].filter(x=>x!==null).join('\n');
   // 1) grava no banco; 2) abre o WhatsApp. O banco decide lote e valor.
   const btn = $('#btn-enviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+  const idInsc = (crypto.randomUUID ? crypto.randomUUID() : null);
   const r = await salvarInscricao({
+    ...(idInsc ? { id: idInsc } : {}),
     nome: v('nome'), telefone: v('telefone'), email: v('email'), cidade: v('cidade'),
     perfil: v('perfil'), nivel: nivel.value, obs: v('obs') || null, aceite: true, teste: !!CONFIG.previa,
   });
@@ -857,6 +1035,12 @@ form.addEventListener('submit', async e=>{
   if (r === 'duplicada') { setErr($('#email'), 'Este e-mail já tem inscrição. Fale com a equipe no WhatsApp.'); $('#email').scrollIntoView({behavior:'smooth',block:'center'}); return; }
   if (r === 'fechada') { toast('As inscrições estão encerradas.'); return; }
   ultimaMsg = msg;
+  if (r === 'ok' && idInsc && CONFIG.pix) {
+    const dadosPg = { id: idInsc, email: v('email'), nome: v('nome') };
+    form.reset();
+    abrirPagamento(dadosPg, 'pagar');
+    return;
+  }
   $('#done-txt').textContent = r === 'ok'
     ? 'Sua vaga está registrada. Agora é só falar com a equipe do Varal pelo WhatsApp para receber os dados de pagamento.'
     : 'Não conseguimos registrar agora, mas não se preocupe: envie seus dados pelo WhatsApp que a equipe faz a sua inscrição.';
@@ -867,6 +1051,58 @@ form.addEventListener('submit', async e=>{
 let ultimaMsg = '';
 $('#done-wa').addEventListener('click', ()=>openWa(ultimaMsg));
 $('#done-nova').addEventListener('click', ()=>{ form.reset(); form.hidden = false; $('#done').hidden = true; });
+
+
+/* ===== pagamento no fim da inscrição ===== */
+const SB = () => CONFIG.supabase || {};
+const sbHeaders = () => ({ apikey: SB().key, Authorization: `Bearer ${SB().key}`, 'Content-Type': 'application/json' });
+const rpc = (fn, body) => fetch(`${SB().url}/rest/v1/rpc/${fn}`, { method:'POST', headers: sbHeaders(), body: JSON.stringify(body) });
+const PG_KEY = 'varal-inscricao-v1';
+const frasesPg = ['Era uma vez uma menina que adorava ouvir histórias…','Ela abria o livro e as palavras saíam voando…','Cada página virava uma aventura nova…','E enquanto a história seguia, a vaga dela ia ficando pronta…'];
+let pg = null, pgFrase = 0, pgTimerFrase = null, pgTimerStatus = null;
+function pgGuardar(){ try { pg ? localStorage.setItem(PG_KEY, JSON.stringify(pg)) : localStorage.removeItem(PG_KEY); } catch(e) {} }
+function pgTela(qual){
+  ['pagar','espera','ok'].forEach(t => $('#pg-'+t).hidden = t !== qual);
+  form.hidden = true; $('#done').hidden = true;
+  clearInterval(pgTimerFrase);
+  if (qual !== 'ok') pgTimerFrase = setInterval(()=>{ pgFrase=(pgFrase+1)%frasesPg.length; $$('[data-frase]').forEach(f=>{ f.style.opacity=0; setTimeout(()=>{ f.textContent=frasesPg[pgFrase]; f.style.opacity=1; },400); }); }, 3600);
+  clearInterval(pgTimerStatus);
+  if (qual !== 'ok') pgTimerStatus = setInterval(pgConferir, qual === 'espera' ? 5000 : 15000);
+  if (qual === 'espera') pgConferir();
+}
+function abrirPagamento(dados, tela, extra={}){
+  pg = { id: dados.id, email: String(dados.email).trim().toLowerCase(), nome: (extra.nome||dados.nome||'').split(' ')[0], tela };
+  pgGuardar();
+  $('#pg-ola').textContent = pg.nome ? `Sua inscrição foi recebida, ${pg.nome}.` : 'Sua inscrição foi recebida.';
+  const cur = CONFIG.lotes[lotStatus().i]; if (cur) $('#pg-valor').textContent = brl(cur.preco);
+  $('#pg-chave').textContent = CONFIG.pix;
+  if (CONFIG.evento) $('#pg-data').textContent = 'Aula ao vivo: ' + $('#hero-data').textContent + '.';
+  pgTela(tela);
+  $('#pg-'+tela).scrollIntoView({ behavior:'smooth', block:'center' });
+}
+async function pgConferir(){
+  if (!pg) return;
+  try {
+    const res = await rpc('varal_status', { p_id: pg.id, p_email: pg.email });
+    const st = await res.json();
+    if (st === 'confirmado') { pg.tela = 'ok'; pgGuardar(); pgTela('ok'); toast('Pagamento confirmado! Vaga garantida 🎉'); }
+    else if (st === 'cancelado') { pg = null; pgGuardar(); clearInterval(pgTimerStatus); form.hidden = false; $('#pg-espera').hidden = true; toast('Sua inscrição foi cancelada. Fale com a equipe no WhatsApp.'); }
+  } catch(e) {}
+}
+$('#pg-copiar').addEventListener('click', async ()=>{ try { await navigator.clipboard.writeText(CONFIG.pix); toast('Chave Pix copiada'); } catch(e) { toast('Chave: '+CONFIG.pix); } });
+$('#pg-paguei').addEventListener('click', async ()=>{
+  const b = $('#pg-paguei'); b.disabled = true; b.textContent = 'Avisando a equipe…';
+  try {
+    await rpc('varal_informar_pagamento', { p_id: pg.id, p_email: pg.email });
+    fetch(`${SB().url}/functions/v1/avisar-pagamento`, { method:'POST', headers: sbHeaders(), body: JSON.stringify({ id: pg.id, email: pg.email }) }).catch(()=>{});
+  } catch(e) {}
+  b.disabled = false; b.textContent = 'Já fiz o Pix';
+  pg.tela = 'espera'; pgGuardar(); pgTela('espera');
+});
+$('#pg-nova').addEventListener('click', ()=>{ pg = null; pgGuardar(); clearInterval(pgTimerFrase); ['pagar','espera','ok'].forEach(t => $('#pg-'+t).hidden = true); form.reset(); form.hidden = false; });
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden && pg && pg.tela === 'espera') pgConferir(); });
+// voltou ao site depois de fechar: retoma de onde parou
+try { const s = JSON.parse(localStorage.getItem(PG_KEY)||'null'); if (s && s.id && CONFIG.pix) { pg = s; abrirPagamento(s, s.tela === 'ok' ? 'ok' : s.tela, { nome: s.nome }); if (s.tela !== 'ok') pgConferir(); } } catch(e) {}
 
 /* banco: o site só insere (RLS); lote e valor são calculados no servidor */
 async function salvarInscricao(dados){

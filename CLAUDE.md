@@ -9,6 +9,15 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
 - Banco: Supabase, projeto `varal-de-historias` (`havplwmjqiiivqhnxsxv`, sa-east-1).
 - Hospedagem: GitHub Pages, branch `gh-pages` → https://rfn7.github.io/varal-de-historias/
 - `.github/workflows/manter-supabase.yml`: consulta diária para o plano grátis não pausar o projeto.
+- Edge Function `avisar-pagamento` (`supabase/functions/`): e-mail aos organizadores quando a aluna toca em "Já fiz o Pix".
+  Precisa do segredo `RESEND_API_KEY` (opcional `AVISO_REMETENTE`). Sem a chave, só o alerta do painel funciona.
+
+## Fluxo de pagamento (opção A, aprovada em 26/11/2026)
+1. Inscrição gravada com id gerado no navegador → tela do Pix (chave `CONFIG.pix`) com a bonequinha.
+2. "Já fiz o Pix" → `varal_informar_pagamento(id, email)` + função `avisar-pagamento`.
+3. Painel: tempo real (Realtime) + som + alerta "Pix para conferir"; reserva de 30 s.
+4. Olavo confirma → a tela da aluna consulta `varal_status(id, email)` a cada 5 s e muda para "vaga garantida".
+   A inscrição fica guardada no navegador (localStorage) para retomar se a aluna fechar e voltar.
 
 ## Regras do banco (não quebrar)
 - O site só INSERE em `varal_inscricoes` (colunas do formulário). Nunca lê.
@@ -16,7 +25,7 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
   Preço e prazo vivem só em `varal_lotes`. O `CONFIG.lotes` da página é só vitrine e deve bater com o banco.
 - 1 inscrição ativa por e-mail (`teste` e `cancelado` não contam).
 - Painel: só e-mails em `varal_organizadores` leem e atualizam.
-- Schema completo: `supabase/migrations/20261125_varal_inscricoes.sql`.
+- Schema: `supabase/migrations/` (20261125 inscrições, 20261126 aviso de pagamento).
 
 ## Estado atual (25/11/2026): MODO DE TESTE
 - `CONFIG.previa = true`: faixa amarela, WhatsApp simulado, inscrições gravadas com `teste = true`.

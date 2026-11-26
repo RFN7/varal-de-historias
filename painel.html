@@ -37,11 +37,19 @@
   .msg.ok{color:var(--green)}
   .link{background:none;border:0;color:var(--blue);font-weight:800;cursor:pointer;padding:8px 0;text-decoration:underline}
   main{padding:24px 0 60px}
-  .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+  .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
   .kpi{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 0 var(--line)}
   .kpi b{display:block;font:700 30px/1 var(--display);color:var(--blue)}
   .kpi small{font-weight:700;color:var(--muted);font-size:13px}
   .kpi.money b{color:var(--green)}
+  .kpi.pix b{color:#b7791f}
+  .alerta-pix{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fff3cd;border:2px solid var(--yellow);border-radius:18px;padding:14px 18px;margin-bottom:16px}
+  .alerta-pix h3{font-size:19px}.alerta-pix p{margin:2px 0 0;font-size:15px}
+  .alerta-pix.novo{animation:chama 1s ease 3}
+  @keyframes chama{50%{box-shadow:0 0 0 6px rgba(247,201,72,.6)}}
+  .st-pix{background:#fff3cd;color:#8a6100;box-shadow:0 0 0 2px var(--yellow) inset}
+  tr.pix-row{background:#fffbea}
+  .som{display:flex;gap:8px;align-items:center;font-size:13px;opacity:.9}
   .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
   .tools > *{flex:1 1 180px}
   .tools .chk{flex:0 0 auto;display:flex;gap:8px;align-items:center;font-weight:800;font-size:14px;margin:0 0 12px}
@@ -92,6 +100,7 @@
 </section>
 
 <main id="app" hidden><div class="wrap">
+  <div class="alerta-pix" id="alerta-pix" hidden role="alert"><div><h3 id="ap-titulo">Pix para conferir</h3><p id="ap-txt"></p></div><button class="btn green" type="button" id="ap-ver">Ver quem pagou</button></div>
   <div class="kpis" id="kpis"></div>
   <div class="tools">
     <label style="margin:0">Buscar<input id="busca" type="search" placeholder="Nome, e-mail, cidade ou WhatsApp"></label>
@@ -150,6 +159,7 @@ async function iniciar(){
   if (location.hash) history.replaceState(null, '', PAINEL_URL);
   if (recuperando) { recuperando=false; $('#nova-senha').value=''; $('#d-senha').showModal(); toast('Crie sua nova senha'); }
   await carregar();
+  tempoReal();
 }
 $('#l-modo').addEventListener('click', ()=>{
   criando = !criando;
@@ -161,7 +171,7 @@ $('#l-modo').addEventListener('click', ()=>{
   $('#l-msg').textContent=''; $('#l-msg').className='msg';
 });
 $('#f-login').addEventListener('submit', async e=>{
-  e.preventDefault(); const m=$('#l-msg'); m.className='msg'; m.textContent='';
+  e.preventDefault(); try { audio = audio || new (window.AudioContext||window.webkitAudioContext)(); } catch(_) {} const m=$('#l-msg'); m.className='msg'; m.textContent='';
   const email=$('#l-email').value.trim().toLowerCase(), password=$('#l-senha').value;
   $('#l-btn').disabled=true;
   if(criando){
@@ -194,11 +204,34 @@ $('#d-senha').addEventListener('close', async()=>{
 });
 
 /* ---------- dados ---------- */
+const pixParaConferir = r => r.status==='pendente' && !!r.pagamento_informado_em;
+let jaAvisados = null, audio = null, canal = null;
+function bip(){ try { audio = audio || new (window.AudioContext||window.webkitAudioContext)(); [0,.18,.36].forEach((t,i)=>{ const o=audio.createOscillator(), g=audio.createGain(); o.frequency.value=[784,1046,1318][i]; g.gain.setValueAtTime(.18,audio.currentTime+t); g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+t+.3); o.connect(g).connect(audio.destination); o.start(audio.currentTime+t); o.stop(audio.currentTime+t+.32); }); } catch(e) {} }
 async function carregar(){
   const { data, error } = await db.from('varal_inscricoes').select('*').order('created_at', { ascending:false });
   if(error){ toast('Erro ao carregar: '+error.message); return; }
-  linhas = data; render();
+  linhas = data;
+  const agora = new Set(linhas.filter(pixParaConferir).map(r=>r.id));
+  if (jaAvisados) {
+    const novos = linhas.filter(r => agora.has(r.id) && !jaAvisados.has(r.id));
+    if (novos.length) {
+      bip(); toast(`Novo Pix para conferir: ${novos.map(r=>r.nome).join(', ')}`);
+      $('#alerta-pix').classList.remove('novo'); void $('#alerta-pix').offsetWidth; $('#alerta-pix').classList.add('novo');
+      try { if (document.hidden) document.title = '(!) Pix para conferir · Painel'; } catch(e) {}
+    }
+  }
+  jaAvisados = agora;
+  render();
 }
+function tempoReal(){
+  if (canal) return;
+  canal = db.channel('varal-inscricoes')
+    .on('postgres_changes', { event:'*', schema:'public', table:'varal_inscricoes' }, ()=>carregar())
+    .subscribe();
+  setInterval(carregar, 30000); // reserva, caso o tempo real caia
+}
+document.addEventListener('click', ()=>{ try { audio = audio || new (window.AudioContext||window.webkitAudioContext)(); audio.resume(); } catch(e) {} }, { once:false, passive:true });
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ document.title='Painel · Pronta pra Contar'; carregar(); } });
 function filtradas(){
   const q=$('#busca').value.trim().toLowerCase(), st=$('#f-status').value, testes=$('#f-teste').checked;
   return linhas.filter(r => (testes || !r.teste) && (!st || r.status===st) &&
@@ -208,10 +241,16 @@ function render(){
   const base = linhas.filter(r => $('#f-teste').checked || !r.teste);
   const conta = s => base.filter(r=>r.status===s).length;
   const arrecadado = base.filter(r=>r.status==='confirmado').reduce((t,r)=>t+Number(r.valor||0),0);
+  const aConferir = base.filter(pixParaConferir);
+  $('#alerta-pix').hidden = !aConferir.length;
+  if (aConferir.length) {
+    $('#ap-titulo').textContent = aConferir.length===1 ? 'Novo Pix para conferir' : `${aConferir.length} Pix para conferir`;
+    $('#ap-txt').textContent = aConferir.map(r=>`${r.nome} (${brl(r.valor)})`).join(', ') + ' avisou que pagou. Confira no extrato e confirme.';
+  }
   $('#kpis').innerHTML = [
-    [base.length,'inscrições'],[conta('pendente'),'aguardando pagamento'],[conta('confirmado'),'confirmadas'],[conta('cancelado'),'canceladas'],[brl(arrecadado),'confirmado em R$','money'],
+    [base.length,'inscrições'],[aConferir.length,'Pix para conferir','pix'],[conta('pendente')-aConferir.length,'aguardando pagamento'],[conta('confirmado'),'confirmadas'],[conta('cancelado'),'canceladas'],[brl(arrecadado),'confirmado em R$','money'],
   ].map(([n,t,c])=>`<div class="kpi ${c||''}"><b>${esc(n)}</b><small>${esc(t)}</small></div>`).join('');
-  const rows = filtradas();
+  const rows = filtradas().sort((a,b)=>pixParaConferir(b)-pixParaConferir(a));
   $('#lista').innerHTML = rows.length ? rows.map(r=>{
     const wa = 'https://wa.me/55'+soDigitos(r.telefone).replace(/^55(?=\d{10,11}$)/,'');
     const marcos = [r.pagamento_confirmado_em&&'pago '+dataBR(r.pagamento_confirmado_em), r.link_enviado_em&&'link '+dataBR(r.link_enviado_em), r.certificado_emitido_em&&'certificado '+dataBR(r.certificado_emitido_em)].filter(Boolean).join(' · ');
@@ -220,13 +259,14 @@ function render(){
       : r.status==='confirmado'
       ? `${r.link_enviado_em?'':`<button class="btn teal sm" data-a="link" data-id="${esc(r.id)}">Link enviado</button>`}${r.certificado_emitido_em?'':`<button class="btn teal sm" data-a="certificado" data-id="${esc(r.id)}">Certificado emitido</button>`}<button class="btn ghost sm" data-a="pendente" data-id="${esc(r.id)}">Voltar p/ pendente</button>`
       : `<button class="btn ghost sm" data-a="pendente" data-id="${esc(r.id)}">Reabrir</button>`;
-    return `<tr>
+    const pix = pixParaConferir(r);
+    return `<tr class="${pix?'pix-row':''}">
       <td data-l="Data">${esc(dataBR(r.created_at))}</td>
       <td data-l="Inscrita(o)"><b>${esc(r.nome)}</b>${r.teste?'<span class="tag teste">TESTE</span>':''}<small>${esc(r.cidade)}</small>${r.obs?`<small>“${esc(r.obs)}”</small>`:''}</td>
       <td data-l="Contato"><a href="${esc(wa)}" target="_blank" rel="noopener">${esc(r.telefone)}</a><small>${esc(r.email)}</small></td>
       <td data-l="Perfil">${esc(r.perfil)}<small>${esc(r.nivel)}</small></td>
       <td data-l="Valor">${esc(brl(r.valor))}<small>${esc(r.lote)}</small></td>
-      <td data-l="Status"><span class="tag st-${esc(r.status)}">${esc(r.status)}</span>${marcos?`<div class="marcos">${esc(marcos)}</div>`:''}</td>
+      <td data-l="Status">${pix?`<span class="tag st-pix">Pix para conferir</span><div class="marcos">avisou ${esc(dataBR(r.pagamento_informado_em))}</div>`:`<span class="tag st-${esc(r.status)}">${esc(r.status)}</span>`}${marcos?`<div class="marcos">${esc(marcos)}</div>`:''}</td>
       <td data-l="Ações"><div class="acoes">${acoes}</div></td></tr>`;
   }).join('') : `<tr><td colspan="7" class="vazio">${linhas.length?'Nenhuma inscrição com esse filtro.':'Ainda não há inscrições.'}</td></tr>`;
 }
@@ -246,12 +286,13 @@ $('#lista').addEventListener('click', async e=>{
 });
 ['input','change'].forEach(ev=>{ $('#busca').addEventListener(ev,render); $('#f-status').addEventListener(ev,render); $('#f-teste').addEventListener(ev,render); });
 $('#btn-atualizar').addEventListener('click', carregar);
+$('#ap-ver').addEventListener('click', ()=>{ $('#f-status').value='pendente'; render(); $('#lista').scrollIntoView({behavior:'smooth'}); bip(); });
 $('#btn-excel').addEventListener('click', ()=>{
   const rows = filtradas();
   if(!rows.length){ toast('Nada para exportar com esse filtro.'); return; }
   const dados = rows.map(r=>({ Data:dataBR(r.created_at), Nome:r.nome, WhatsApp:r.telefone, 'E-mail':r.email, Cidade:r.cidade, Perfil:r.perfil,
     'Já conta histórias?':r.nivel, Observação:r.obs||'', Lote:r.lote, Valor:Number(r.valor||0), Status:r.status, Teste:r.teste?'sim':'',
-    'Pagamento confirmado':dataBR(r.pagamento_confirmado_em), 'Link enviado':dataBR(r.link_enviado_em), 'Certificado emitido':dataBR(r.certificado_emitido_em) }));
+    'Avisou que pagou':dataBR(r.pagamento_informado_em), 'Pagamento confirmado':dataBR(r.pagamento_confirmado_em), 'Link enviado':dataBR(r.link_enviado_em), 'Certificado emitido':dataBR(r.certificado_emitido_em) }));
   const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = Object.keys(dados[0]).map(k=>({ wch: Math.max(12, k.length+2) }));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Inscrições');
   XLSX.writeFile(wb, `pronta-pra-contar-inscricoes-${new Date().toLocaleDateString('sv-SE')}.xlsx`);
