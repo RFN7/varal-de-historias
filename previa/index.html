@@ -1144,7 +1144,7 @@ $('#pg-paguei').addEventListener('click', async ()=>{
       topic: CONFIG.ntfy, priority: 4, tags: ['moneybag'],
       title: (CONFIG.previa ? '[TESTE] ' : '') + 'Novo Pix para conferir',
       message: `Uma aluna avisou que pagou ${$('#pg-valor').textContent}. Confira no extrato e confirme no painel.`,
-      click: 'https://rfn7.github.io/varal-de-historias/previa/painel.html',
+      click: 'https://cursos.varaldehistorias.com.br/previa/painel.html',
     }) }).catch(()=>{});
   } catch(e) {}
   b.disabled = false; b.textContent = 'Já fiz o Pix';

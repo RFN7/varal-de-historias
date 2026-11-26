@@ -7,7 +7,10 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
 - `index.html`: página de arquivo único (HTML + CSS + JS), dados no objeto `CONFIG`.
 - `painel.html`: painel da equipe (Supabase Auth com e-mail e senha, lista, confirmação, Excel).
 - Banco: Supabase, projeto `varal-de-historias` (`havplwmjqiiivqhnxsxv`, sa-east-1).
-- Hospedagem: GitHub Pages, branch `gh-pages` → https://rfn7.github.io/varal-de-historias/
+- Hospedagem: GitHub Pages, branch `gh-pages` → https://cursos.varaldehistorias.com.br/
+  Subdomínio do dono do Varal: registro DNS CNAME `cursos` → `rfn7.github.io`, e arquivo `CNAME` na raiz (26/11/2026).
+  O endereço antigo rfn7.github.io/varal-de-historias redireciona para ele.
+- Prévia v6 (comprovante opcional + código da inscrição) em `/previa/`, aguardando decisão.
 - `.github/workflows/manter-supabase.yml`: consulta diária para o plano grátis não pausar o projeto.
 - Aviso ao Olavo quando a aluna toca em "Já fiz o Pix":
   - Celular: app ntfy, canal `CONFIG.ntfy`. Sai do navegador da aluna (do servidor do Supabase a cota grátis

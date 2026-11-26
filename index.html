@@ -9,7 +9,7 @@
   <meta name="description" content="Curso ao vivo online de 1h30 com Juçara Batichoti, criadora do canal Varal de Histórias. Técnicas de voz, ritmo, pausas, gestos, presença, recursos e mediação.">
   <meta property="og:title" content="Pronta pra Contar — Contação de Histórias na Prática">
   <meta property="og:description" content="Curso ao vivo online com Juçara Batichoti, do Varal de Histórias. Última turma de 2026.">
-  <meta property="og:image" content="assets/jucara-coroa.jpg">
+  <meta property="og:image" content="https://cursos.varaldehistorias.com.br/assets/jucara-coroa.jpg">
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/logo-pronta.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1102,7 +1102,7 @@ $('#pg-paguei').addEventListener('click', async ()=>{
       topic: CONFIG.ntfy, priority: 4, tags: ['moneybag'],
       title: (CONFIG.previa ? '[TESTE] ' : '') + 'Novo Pix para conferir',
       message: `Uma aluna avisou que pagou ${$('#pg-valor').textContent}. Confira no extrato e confirme no painel.`,
-      click: 'https://rfn7.github.io/varal-de-historias/painel.html',
+      click: 'https://cursos.varaldehistorias.com.br/painel.html',
     }) }).catch(()=>{});
   } catch(e) {}
   b.disabled = false; b.textContent = 'Já fiz o Pix';
