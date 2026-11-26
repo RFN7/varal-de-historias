@@ -9,12 +9,15 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
 - Banco: Supabase, projeto `varal-de-historias` (`havplwmjqiiivqhnxsxv`, sa-east-1).
 - Hospedagem: GitHub Pages, branch `gh-pages` → https://rfn7.github.io/varal-de-historias/
 - `.github/workflows/manter-supabase.yml`: consulta diária para o plano grátis não pausar o projeto.
-- Edge Function `avisar-pagamento` (`supabase/functions/`): e-mail aos organizadores quando a aluna toca em "Já fiz o Pix".
-  Precisa do segredo `RESEND_API_KEY` (opcional `AVISO_REMETENTE`). Sem a chave, só o alerta do painel funciona.
+- Aviso ao Olavo quando a aluna toca em "Já fiz o Pix":
+  - Celular: app ntfy, canal `CONFIG.ntfy`. Sai do navegador da aluna (do servidor do Supabase a cota grátis
+    do ntfy estoura). A mensagem não leva dados da aluna.
+  - E-mail: Edge Function `avisar-pagamento` (`supabase/functions/`), precisa do segredo `RESEND_API_KEY`
+    (opcional `AVISO_REMETENTE`). Sem a chave, responde `sem_chave` e não faz nada.
 
 ## Fluxo de pagamento (opção A, aprovada em 26/11/2026)
 1. Inscrição gravada com id gerado no navegador → tela do Pix (chave `CONFIG.pix`) com a bonequinha.
-2. "Já fiz o Pix" → `varal_informar_pagamento(id, email)` + função `avisar-pagamento`.
+2. "Já fiz o Pix" → `varal_informar_pagamento(id, email)` + ntfy (celular) + função `avisar-pagamento` (e-mail).
 3. Painel: tempo real (Realtime) + som + alerta "Pix para conferir"; reserva de 30 s.
 4. Olavo confirma → a tela da aluna consulta `varal_status(id, email)` a cada 5 s e muda para "vaga garantida".
    A inscrição fica guardada no navegador (localStorage) para retomar se a aluna fechar e voltar.

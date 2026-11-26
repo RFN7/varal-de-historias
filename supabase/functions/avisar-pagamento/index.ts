@@ -1,4 +1,6 @@
-// Avisa a equipe por e-mail quando uma aluna toca em "Já fiz o Pix".
+// Avisa a equipe por e-mail (Resend) quando uma aluna toca em "Já fiz o Pix".
+// A notificação no celular (ntfy) sai do navegador da aluna (index.html): pelo servidor
+// compartilhado do Supabase a cota gratuita do ntfy estoura.
 // Chamada pela página depois de varal_informar_pagamento. Faz a própria checagem:
 // só envia se a inscrição existe (id + e-mail), está pendente, foi informada
 // como paga e ainda não teve aviso (1 e-mail por inscrição, sem spam).
@@ -59,7 +61,6 @@ Deno.serve(async (req) => {
     }),
   });
   if (!res.ok) { console.error("resend", res.status, await res.text()); return json({ ok: false, motivo: "falha_envio" }); }
-
   await db.from("varal_inscricoes").update({ aviso_enviado_em: new Date().toISOString() }).eq("id", r.id);
   return json({ ok: true });
 });

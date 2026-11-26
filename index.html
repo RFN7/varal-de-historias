@@ -805,6 +805,8 @@
 const CONFIG = {
   previa: true,                         // true = faixa de prévia, WhatsApp simulado e inscrição gravada como TESTE
   // Banco de inscrições (Supabase · projeto varal-de-historias). A chave é pública: o banco só aceita inserir.
+  // Canal do Olavo no app ntfy: recebe só "novo Pix para conferir", sem dados da aluna.
+  ntfy: 'varal-pix-1be7e5bdcc69',
   supabase: { url: 'https://havplwmjqiiivqhnxsxv.supabase.co', key: 'sb_publishable_iyfx-VsBMAVWdeXyMTH8OA_3KPf252v' },
   whatsapp: '5561981257574',            // fonte: link do Mídia Kit 2026
   email: 'varal.historias@gmail.com',
@@ -1095,6 +1097,13 @@ $('#pg-paguei').addEventListener('click', async ()=>{
   try {
     await rpc('varal_informar_pagamento', { p_id: pg.id, p_email: pg.email });
     fetch(`${SB().url}/functions/v1/avisar-pagamento`, { method:'POST', headers: sbHeaders(), body: JSON.stringify({ id: pg.id, email: pg.email }) }).catch(()=>{});
+    // celular do Olavo (ntfy), enviado daqui: sem nome, e-mail ou telefone da aluna
+    if (CONFIG.ntfy) fetch('https://ntfy.sh/', { method:'POST', body: JSON.stringify({
+      topic: CONFIG.ntfy, priority: 4, tags: ['moneybag'],
+      title: (CONFIG.previa ? '[TESTE] ' : '') + 'Novo Pix para conferir',
+      message: `Uma aluna avisou que pagou ${$('#pg-valor').textContent}. Confira no extrato e confirme no painel.`,
+      click: 'https://rfn7.github.io/varal-de-historias/painel.html',
+    }) }).catch(()=>{});
   } catch(e) {}
   b.disabled = false; b.textContent = 'Já fiz o Pix';
   pg.tela = 'espera'; pgGuardar(); pgTela('espera');
