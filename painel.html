@@ -86,7 +86,8 @@
     <div class="msg" id="l-msg" role="alert"></div>
     <button class="btn" style="width:100%;margin-top:8px" id="l-btn">Entrar</button>
   </form>
-  <button class="link" type="button" id="l-modo">Primeiro acesso? Criar minha senha</button>
+  <button class="link" type="button" id="l-modo">Primeiro acesso? Criar minha senha</button><br>
+  <button class="link" type="button" id="l-esqueci">Esqueci minha senha</button>
 </section>
 
 <main id="app" hidden><div class="wrap">
@@ -118,6 +119,7 @@
 {
 const SUPABASE = { url: 'https://havplwmjqiiivqhnxsxv.supabase.co', key: 'sb_publishable_iyfx-VsBMAVWdeXyMTH8OA_3KPf252v' };
 const db = supabase.createClient(SUPABASE.url, SUPABASE.key);
+const PAINEL_URL = location.origin + location.pathname; // links dos e-mails voltam para cá
 const $ = (s, el=document) => el.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const brl = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
@@ -125,16 +127,27 @@ const dataBR = s => s ? new Date(s).toLocaleString('pt-BR', { timeZone:'America/
 const soDigitos = s => String(s||'').replace(/\D/g,'');
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
 
-let linhas = [], criando = false;
+let linhas = [], criando = false, recuperando = false;
 
 /* ---------- login ---------- */
 function mostrarLogin(msg=''){ $('#login').hidden=false; $('#app').hidden=true; $('#user-box').hidden=true; $('#l-msg').textContent=msg; }
 async function iniciar(){
+  // volta de um link do e-mail: mostra erro amigável ou abre a troca de senha
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('error_code') || h.get('error')) {
+    history.replaceState(null, '', PAINEL_URL);
+    const expirado = /otp_expired|expired|invalid/i.test(h.get('error_code')+' '+h.get('error_description'));
+    mostrarLogin(expirado ? 'Esse link do e-mail já foi usado ou expirou. Se você já confirmou o cadastro, é só entrar com e-mail e senha.' : 'Não foi possível abrir o link do e-mail. Tente entrar com e-mail e senha.');
+    return;
+  }
+  if (h.get('type') === 'recovery') recuperando = true;
   const { data:{ session } } = await db.auth.getSession();
   if(!session) return mostrarLogin();
   const { data: ok, error } = await db.rpc('varal_is_organizador');
   if(error || !ok){ await db.auth.signOut(); return mostrarLogin('Este e-mail ainda não tem acesso ao painel. Peça a liberação ao Romero.'); }
   $('#login').hidden=true; $('#app').hidden=false; $('#user-box').hidden=false; $('#user-email').textContent=session.user.email;
+  if (location.hash) history.replaceState(null, '', PAINEL_URL);
+  if (recuperando) { recuperando=false; $('#nova-senha').value=''; $('#d-senha').showModal(); toast('Crie sua nova senha'); }
   await carregar();
 }
 $('#l-modo').addEventListener('click', ()=>{
@@ -151,7 +164,7 @@ $('#f-login').addEventListener('submit', async e=>{
   const email=$('#l-email').value.trim().toLowerCase(), password=$('#l-senha').value;
   $('#l-btn').disabled=true;
   if(criando){
-    const { data, error } = await db.auth.signUp({ email, password });
+    const { data, error } = await db.auth.signUp({ email, password, options:{ emailRedirectTo: PAINEL_URL } });
     $('#l-btn').disabled=false;
     if(error){ m.textContent = /already|registered/i.test(error.message) ? 'Esse e-mail já tem senha. Clique em "Já tenho senha. Entrar".' : 'Não foi possível criar: '+error.message; return; }
     if(!data.session){ m.className='msg ok'; m.textContent='Pronto! Confirme no link que chegou no seu e-mail e depois volte aqui para entrar.'; return; }
@@ -159,8 +172,15 @@ $('#f-login').addEventListener('submit', async e=>{
   }
   const { error } = await db.auth.signInWithPassword({ email, password });
   $('#l-btn').disabled=false;
-  if(error){ m.textContent = /confirm/i.test(error.message) ? 'Falta confirmar o e-mail: abra o link que chegou na sua caixa de entrada.' : 'E-mail ou senha incorretos.'; return; }
+  if(error){ m.textContent = (error.code==='email_not_confirmed' || /confirm/i.test(error.message)) ? 'Falta confirmar o e-mail: abra o link que chegou na sua caixa de entrada.' : 'E-mail ou senha incorretos. Se não lembra a senha, toque em "Esqueci minha senha".'; return; }
   iniciar();
+});
+$('#l-esqueci').addEventListener('click', async ()=>{
+  const m=$('#l-msg'); m.className='msg'; const email=$('#l-email').value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ m.textContent='Digite seu e-mail no campo acima e toque de novo em "Esqueci minha senha".'; $('#l-email').focus(); return; }
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: PAINEL_URL });
+  if(error){ m.textContent = /rate|seconds/i.test(error.message) ? 'Aguarde um minuto antes de pedir outro e-mail.' : 'Não foi possível enviar: '+error.message; return; }
+  m.className='msg ok'; m.textContent='Enviamos um link para '+email+'. Abra o e-mail e toque no link para criar uma nova senha.';
 });
 $('#btn-sair').addEventListener('click', async()=>{ await db.auth.signOut(); location.reload(); });
 $('#btn-senha').addEventListener('click', ()=>{ $('#nova-senha').value=''; $('#s-msg').textContent=''; $('#d-senha').showModal(); });
