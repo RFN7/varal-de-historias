@@ -10,7 +10,7 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
 - Hospedagem: GitHub Pages, branch `gh-pages` → https://cursos.varaldehistorias.com.br/
   Subdomínio do dono do Varal: registro DNS CNAME `cursos` → `rfn7.github.io`, e arquivo `CNAME` na raiz (26/11/2026).
   O endereço antigo rfn7.github.io/varal-de-historias redireciona para ele.
-- Prévia v6 (comprovante opcional + código da inscrição) em `/previa/`, aguardando decisão.
+- `/previa/` só redireciona para o site e o painel oficiais (a prévia v7 foi promovida em 27/11/2026).
 - `.github/workflows/manter-supabase.yml`: consulta diária para o plano grátis não pausar o projeto.
 - Aviso ao Olavo quando a aluna toca em "Já fiz o Pix":
   - Celular: app ntfy, canal `CONFIG.ntfy`. Sai do navegador da aluna (do servidor do Supabase a cota grátis
@@ -24,6 +24,10 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
 3. Painel: tempo real (Realtime) + som + alerta "Pix para conferir"; reserva de 30 s.
 4. Olavo confirma → a tela da aluna consulta `varal_status(id, email)` a cada 5 s e muda para "vaga garantida".
    A inscrição fica guardada no navegador (localStorage) para retomar se a aluna fechar e voltar.
+5. Comprovante opcional (bucket privado `varal-comprovantes`, `varal_anexar_comprovante`).
+6. CPF obrigatório e validado no formulário; "Já se inscreveu?" busca por CPF + e-mail (`varal_buscar_por_cpf`).
+7. Painel: aviso de nova inscrição (som + etiqueta NOVA) e ficha com todos os dados para conferir,
+   corrigir (nome, CPF, contato, perfil) e aprovar. Organizadores têm update nessas colunas.
 
 ## Regras do banco (não quebrar)
 - O site só INSERE em `varal_inscricoes` (colunas do formulário). Nunca lê.
@@ -31,11 +35,13 @@ no padrão do Eleva Open Boulder (RFN7/openboulder). Desenvolvido por RFN AI Eng
   Preço e prazo vivem só em `varal_lotes`. O `CONFIG.lotes` da página é só vitrine e deve bater com o banco.
 - 1 inscrição ativa por e-mail (`teste` e `cancelado` não contam).
 - Painel: só e-mails em `varal_organizadores` leem e atualizam.
-- Schema: `supabase/migrations/` (20261125 inscrições, 20261126 aviso de pagamento).
+- Schema: `supabase/migrations/` (inscrições, aviso de pagamento, comprovante, correção de dados, CPF).
 
-## Estado atual (25/11/2026): MODO DE TESTE
-- `CONFIG.previa = true`: faixa amarela, WhatsApp simulado, inscrições gravadas com `teste = true`.
-- `noindex` ligado (meta robots). Juçara ainda não aprovou a divulgação.
+## Estado atual (27/11/2026): NO AR, sem modo de teste
+- `CONFIG.previa = false` (pedido do Romero em 27/11/2026): sem faixa de teste; inscrições novas entram como reais (`teste = false`).
+- Ainda com `noindex` (fora do Google) até o Romero pedir para liberar.
+- Data e horário da aula (`CONFIG.evento`) ainda são os de exemplo: confirmar com a Juçara.
+- Inscrições de teste antigas continuam no banco com `teste = true`.
 - Organizador liberado: olavovirgilio@gmail.com.
 
 ## Para lançar de verdade

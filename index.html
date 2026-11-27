@@ -9,7 +9,7 @@
   <meta name="description" content="Curso ao vivo online de 1h30 com Juçara Batichoti, criadora do canal Varal de Histórias. Técnicas de voz, ritmo, pausas, gestos, presença, recursos e mediação.">
   <meta property="og:title" content="Pronta pra Contar — Contação de Histórias na Prática">
   <meta property="og:description" content="Curso ao vivo online com Juçara Batichoti, do Varal de Histórias. Última turma de 2026.">
-  <meta property="og:image" content="https://cursos.varaldehistorias.com.br/assets/jucara-coroa.jpg">
+  <meta property="og:image" content="assets/jucara-coroa.jpg">
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/logo-pronta.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -284,6 +284,17 @@
     .pay-stage .estrela{animation:sobe 3s ease-in infinite;opacity:0}
     @keyframes sobe{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translate(var(--dx),-120px) scale(1.1);opacity:0}}
     .pay-ok .estrela{animation-duration:1.5s}.pay-ok .pg-r{animation:none}
+    .cod{display:inline-flex;gap:8px;align-items:center;background:var(--paper);border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px;margin:0 0 12px}
+    .cod b{font:700 17px var(--display);letter-spacing:.08em;color:var(--blue)}
+    .anexo{display:flex;align-items:center;gap:10px;margin-top:12px;border:2px dashed rgba(31,42,68,.25);border-radius:14px;padding:12px;cursor:pointer;font-weight:800;font-size:15px;background:#fff}
+    .anexo input{position:absolute;opacity:0;width:1px;height:1px}
+    .anexo small{display:block;font-weight:600;color:var(--muted);font-size:13px}
+    .anexo.ok{border-style:solid;border-color:var(--green);background:#eef8f0}
+    .acomp{margin-top:22px;background:rgba(255,255,255,.1);border:2px solid var(--line-d);border-radius:22px;padding:20px}
+    .acomp h3{color:#fff;font-size:20px;margin-bottom:4px}.acomp p{margin:0 0 12px;color:#c9d3f5;font-size:15px}
+    .acomp .row{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr) auto;gap:10px;align-items:end}
+    .acomp label{color:#fff}.acomp input{width:100%}
+    @media(max-width:600px){.acomp .row{grid-template-columns:minmax(0,1fr)}}
     .done h3{font-size:30px;color:var(--green);margin-bottom:10px}
 
     /* faq */
@@ -374,7 +385,6 @@
   </style>
 </head>
 <body>
-<div class="preview-bar" id="preview-bar" hidden>Prévia v5 · a inscrição grava no banco de verdade, marcada como TESTE · data da aula é de exemplo</div>
 
 <div class="last-bar"><b>Última turma de 2026</b> com a Juçara · valor único <b>R$ 85</b> · <a href="#inscricao">garantir minha vaga</a></div>
 <header class="topbar">
@@ -578,8 +588,9 @@
           <h3 class="st"><b>1</b>Seus dados</h3>
           <div class="fgrid">
             <div class="field full"><label for="nome">Nome completo</label><input id="nome" autocomplete="name" placeholder="Como vai sair no certificado" required><span class="err"></span></div>
+            <div class="field"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required><span class="err"></span></div>
             <div class="field"><label for="telefone">WhatsApp</label><input id="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(61) 90000-0000" required><span class="err"></span></div>
-            <div class="field"><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com" required><span class="err"></span></div>
+            <div class="field full"><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com" required><span class="err"></span></div>
             <div class="field full"><label for="cidade">Cidade e estado</label><input id="cidade" autocomplete="address-level2" placeholder="Ex.: Brasília – DF" required><span class="err"></span></div>
           </div>
 
@@ -653,6 +664,7 @@
             <small>Chave Pix (e-mail) do Varal de Histórias</small>
             <div class="pix-chave"><span id="pg-chave"></span><button class="btn" type="button" id="pg-copiar" style="padding:8px 16px;font-size:15px">Copiar</button></div>
             <small>Pague no app do seu banco e volte aqui para avisar.</small>
+            <label class="anexo" id="pg-anexo"><input type="file" id="pg-arquivo" accept="image/*,application/pdf"><span aria-hidden="true" style="font-size:22px">📎</span><span><span id="pg-arq-txt">Anexar comprovante (opcional)</span><small>Foto ou PDF, até 5 MB. Ajuda a equipe a confirmar mais rápido.</small></span></label>
             <button class="btn block" type="button" id="pg-paguei" style="margin-top:14px;background:var(--green);box-shadow:0 5px 0 #2a7c3f">Já fiz o Pix</button>
           </div>
         </div>
@@ -701,7 +713,7 @@
               </svg></div>
           <p class="frase" data-frase>Ela abria o livro e as palavras saíam voando…</p>
           <div class="status" role="status"><span>Aguardando a confirmação</span><span class="dots"><i></i><i></i><i></i></span></div>
-          <p class="help" style="margin:0">Pode deixar esta tela aberta: quando a equipe confirmar, ela muda sozinha. Se fechar, a equipe do Varal te avisa pelo WhatsApp.</p>
+          <p class="help" style="margin:0">Pode deixar esta tela aberta: quando a equipe confirmar, ela muda sozinha. Se fechar, é só voltar aqui e usar o seu CPF e e-mail em "Já se inscreveu?", aqui embaixo.</p>
         </div>
         <div class="pay pay-ok" id="pg-ok" hidden>
           <h3>Pagamento confirmado!</h3>
@@ -766,6 +778,16 @@
           <img src="assets/selo.jpg" alt="" loading="lazy">
         </aside>
       </div>
+      <div class="acomp" id="acompanhar">
+        <h3>Já se inscreveu?</h3>
+        <p>Acompanhe o pagamento e a sua vaga com o CPF e o e-mail que você usou na inscrição.</p>
+        <form class="row" id="f-acomp" novalidate>
+          <div class="field"><label for="a-cpf">CPF</label><input id="a-cpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00"></div>
+          <div class="field"><label for="a-email">E-mail</label><input id="a-email" type="email" autocomplete="email" placeholder="voce@email.com"></div>
+          <button class="btn yellow" type="submit" id="a-btn">Ver minha inscrição</button>
+        </form>
+        <span class="err" id="a-err" style="color:#ffd1d1"></span>
+      </div>
     </div>
   </section>
 
@@ -803,7 +825,7 @@
    Valores marcados com A CONFIRMAR ainda são de exemplo (ver CLAUDE.md)
    ===================================================================== */
 const CONFIG = {
-  previa: true,                         // true = faixa de prévia, WhatsApp simulado e inscrição gravada como TESTE
+  previa: false,                         // true = faixa de prévia, WhatsApp simulado e inscrição gravada como TESTE
   // Banco de inscrições (Supabase · projeto varal-de-historias). A chave é pública: o banco só aceita inserir.
   // Canal do Olavo no app ntfy: recebe só "novo Pix para conferir", sem dados da aluna.
   ntfy: 'varal-pix-1be7e5bdcc69',
@@ -992,6 +1014,12 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') lb.classList.remo
 /* inscrição */
 const form = $('#signup');
 function setErr(el,msg){ const f=el.closest('.field'); const e=f&&$('.err',f); el.classList.toggle('invalid',!!msg); if(e) e.textContent=msg||''; return !msg; }
+const soNum = v => String(v||'').replace(/\D/g,'');
+const maskCpf = v => { v=soNum(v).slice(0,11); return v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/,'$1.$2.$3-$4'); };
+function cpfValido(c){ c=soNum(c); if(c.length!==11 || /^(\d)\1{10}$/.test(c)) return false;
+  const dv = n => { let t=0; for(let i=0;i<n;i++) t+=+c[i]*(n+1-i); const r=(t*10)%11; return r===10?0:r; };
+  return dv(9)===+c[9] && dv(10)===+c[10]; }
+['#cpf','#a-cpf'].forEach(id=>$(id).addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); }));
 const maskPhone = v => { v=v.replace(/\D/g,'').slice(0,11); return v.length>10 ? v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3') : v.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/,(m,a,b,c)=>(a?'('+a:'')+(a.length===2?') ':'')+b+(c?'-'+c:'')); };
 $('#telefone').addEventListener('input', e=>{ e.target.value = maskPhone(e.target.value); });
 $$('input,select,textarea',form).forEach(el=>el.addEventListener('input',()=>setErr(el,'')));
@@ -1001,6 +1029,7 @@ form.addEventListener('submit', async e=>{
   const nivel = $('input[name="nivel"]:checked', form);
   const ok = [
     setErr($('#nome'), v('nome').split(/\s+/).length<2 ? 'Informe nome e sobrenome' : ''),
+    setErr($('#cpf'), cpfValido(v('cpf')) ? '' : 'CPF inválido'),
     setErr($('#telefone'), v('telefone').replace(/\D/g,'').length<10 ? 'WhatsApp com DDD' : ''),
     setErr($('#email'), /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email')) ? '' : 'E-mail inválido'),
     setErr($('#cidade'), v('cidade') ? '' : 'Informe sua cidade'),
@@ -1030,7 +1059,7 @@ form.addEventListener('submit', async e=>{
   const idInsc = (crypto.randomUUID ? crypto.randomUUID() : null);
   const r = await salvarInscricao({
     ...(idInsc ? { id: idInsc } : {}),
-    nome: v('nome'), telefone: v('telefone'), email: v('email'), cidade: v('cidade'),
+    nome: v('nome'), cpf: soNum(v('cpf')), telefone: v('telefone'), email: v('email'), cidade: v('cidade'),
     perfil: v('perfil'), nivel: nivel.value, obs: v('obs') || null, aceite: true, teste: !!CONFIG.previa,
   });
   btn.disabled = false; btn.textContent = 'Enviar inscrição';
@@ -1092,9 +1121,26 @@ async function pgConferir(){
   } catch(e) {}
 }
 $('#pg-copiar').addEventListener('click', async ()=>{ try { await navigator.clipboard.writeText(CONFIG.pix); toast('Chave Pix copiada'); } catch(e) { toast('Chave: '+CONFIG.pix); } });
+const MAX_ARQ = 5 * 1024 * 1024;
+$('#pg-arquivo').addEventListener('change', ()=>{
+  const f = $('#pg-arquivo').files[0];
+  if (f && f.size > MAX_ARQ) { $('#pg-arquivo').value=''; toast('O arquivo passa de 5 MB'); }
+  const ok = !!$('#pg-arquivo').files[0];
+  $('#pg-anexo').classList.toggle('ok', ok);
+  $('#pg-arq-txt').textContent = ok ? 'Comprovante: ' + $('#pg-arquivo').files[0].name : 'Anexar comprovante (opcional)';
+});
+async function enviarComprovante(f){
+  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5) || 'jpg';
+  const caminho = `${pg.id}/${(crypto.randomUUID ? crypto.randomUUID() : Date.now())}.${ext}`;
+  const up = await fetch(`${SB().url}/storage/v1/object/varal-comprovantes/${caminho}`, { method:'POST', headers:{ apikey: SB().key, Authorization:`Bearer ${SB().key}`, 'Content-Type': f.type || 'application/octet-stream', 'x-upsert':'false' }, body: f });
+  if (!up.ok) throw new Error('upload');
+  await rpc('varal_anexar_comprovante', { p_id: pg.id, p_email: pg.email, p_caminho: caminho });
+}
 $('#pg-paguei').addEventListener('click', async ()=>{
   const b = $('#pg-paguei'); b.disabled = true; b.textContent = 'Avisando a equipe…';
   try {
+    const f = $('#pg-arquivo').files[0];
+    if (f) { b.textContent = 'Enviando comprovante…'; try { await enviarComprovante(f); } catch(e) { toast('Não conseguimos enviar o comprovante, mas avisamos a equipe.'); } }
     await rpc('varal_informar_pagamento', { p_id: pg.id, p_email: pg.email });
     fetch(`${SB().url}/functions/v1/avisar-pagamento`, { method:'POST', headers: sbHeaders(), body: JSON.stringify({ id: pg.id, email: pg.email }) }).catch(()=>{});
     // celular do Olavo (ntfy), enviado daqui: sem nome, e-mail ou telefone da aluna
@@ -1108,7 +1154,23 @@ $('#pg-paguei').addEventListener('click', async ()=>{
   b.disabled = false; b.textContent = 'Já fiz o Pix';
   pg.tela = 'espera'; pgGuardar(); pgTela('espera');
 });
-$('#pg-nova').addEventListener('click', ()=>{ pg = null; pgGuardar(); clearInterval(pgTimerFrase); ['pagar','espera','ok'].forEach(t => $('#pg-'+t).hidden = true); form.reset(); form.hidden = false; });
+$('#f-acomp').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const cpf = soNum($('#a-cpf').value), email = $('#a-email').value.trim().toLowerCase(), err = $('#a-err');
+  err.textContent = '';
+  if (!cpfValido(cpf)) { err.textContent = 'Digite o CPF usado na inscrição.'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Digite o e-mail usado na inscrição.'; return; }
+  $('#a-btn').disabled = true;
+  try {
+    const res = await rpc('varal_buscar_por_cpf', { p_cpf: cpf, p_email: email });
+    const [r] = await res.json();
+    if (!r) { err.textContent = 'Não achamos essa inscrição. Confira o CPF e o e-mail.'; return; }
+    if (r.status === 'cancelado') { err.textContent = 'Essa inscrição foi cancelada. Fale com a equipe no WhatsApp.'; return; }
+    abrirPagamento({ id: r.id, email, nome: r.nome }, r.status === 'confirmado' ? 'ok' : (r.informado ? 'espera' : 'pagar'));
+  } catch(e2) { err.textContent = 'Não foi possível consultar agora. Tente de novo.'; }
+  finally { $('#a-btn').disabled = false; }
+});
+$('#pg-nova').addEventListener('click', ()=>{ $('#pg-arquivo').value=''; $('#pg-anexo').classList.remove('ok'); $('#pg-arq-txt').textContent='Anexar comprovante (opcional)'; pg = null; pgGuardar(); clearInterval(pgTimerFrase); ['pagar','espera','ok'].forEach(t => $('#pg-'+t).hidden = true); form.reset(); form.hidden = false; });
 document.addEventListener('visibilitychange', ()=>{ if (!document.hidden && pg && pg.tela === 'espera') pgConferir(); });
 // voltou ao site depois de fechar: retoma de onde parou
 try { const s = JSON.parse(localStorage.getItem(PG_KEY)||'null'); if (s && s.id && CONFIG.pix) { pg = s; abrirPagamento(s, s.tela === 'ok' ? 'ok' : s.tela, { nome: s.nome }); if (s.tela !== 'ok') pgConferir(); } } catch(e) {}
