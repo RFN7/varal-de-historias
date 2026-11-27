@@ -123,7 +123,7 @@
   <div class="alerta-pix" id="alerta-pix" hidden role="alert"><div><h3 id="ap-titulo">Pix para conferir</h3><p id="ap-txt"></p></div><button class="btn green" type="button" id="ap-ver">Ver quem pagou</button></div>
   <div class="kpis" id="kpis"></div>
   <div class="tools">
-    <label style="margin:0">Buscar<input id="busca" type="search" placeholder="Nome, e-mail, cidade, WhatsApp ou código"></label>
+    <label style="margin:0">Buscar<input id="busca" type="search" placeholder="Nome, CPF, e-mail, cidade ou WhatsApp"></label>
     <label style="margin:0">Status<select id="f-status"><option value="">Todos</option><option>pendente</option><option>confirmado</option><option>cancelado</option></select></label>
     <label class="chk"><input type="checkbox" id="f-teste" checked>Mostrar testes</label>
     <button class="btn teal" type="button" id="btn-atualizar">Atualizar</button>
@@ -140,8 +140,9 @@
   <form id="f-ficha" class="corpo" novalidate>
     <div class="grade">
       <label class="full">Nome completo (como sai no certificado)<input id="fi-n" maxlength="120" required></label>
+      <label>CPF<input id="fi-cpf" inputmode="numeric" maxlength="14"></label>
       <label>WhatsApp<input id="fi-t" maxlength="20" required></label>
-      <label>E-mail<input id="fi-e" type="email" maxlength="160" required></label>
+      <label class="full">E-mail<input id="fi-e" type="email" maxlength="160" required></label>
       <label class="full">Cidade e estado<input id="fi-c" maxlength="80" required></label>
       <label>Perfil<select id="fi-p"></select></label>
       <label>Já conta histórias?<select id="fi-v"><option>Ainda não, quero começar</option><option>Às vezes, quero melhorar</option><option>Sempre, quero me profissionalizar</option></select></label>
@@ -176,6 +177,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const brl = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 const dataBR = s => s ? new Date(s).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
 const soDigitos = s => String(s||'').replace(/\D/g,'');
+const fmtCpf = c => c ? String(c).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4') : 'sem CPF';
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
 
 let linhas = [], criando = false, recuperando = false;
@@ -292,7 +294,7 @@ document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ docume
 function filtradas(){
   const q=$('#busca').value.trim().toLowerCase(), st=$('#f-status').value, testes=$('#f-teste').checked;
   return linhas.filter(r => (testes || !r.teste) && (!st || r.status===st) &&
-    (!q || [r.nome,r.email,r.cidade,r.telefone,soDigitos(r.telefone),String(r.id).slice(0,8)].some(x=>String(x||'').toLowerCase().includes(q))));
+    (!q || [r.nome,r.email,r.cidade,r.telefone,soDigitos(r.telefone),soDigitos(r.cpf)].some(x=>String(x||'').toLowerCase().includes(q))));
 }
 function render(){
   const base = linhas.filter(r => $('#f-teste').checked || !r.teste);
@@ -325,7 +327,7 @@ function render(){
     const pix = pixParaConferir(r), nova = ehNova(r);
     return `<tr class="${pix?'pix-row':(nova?'nova-row':'')}">
       <td data-l="Data">${esc(dataBR(r.created_at))}</td>
-      <td data-l="Inscrita(o)"><b>${esc(r.nome)}</b>${nova?'<span class="tag nova">NOVA</span>':''}${r.teste?'<span class="tag teste">TESTE</span>':''}<small>${esc(r.cidade)} · código ${esc(String(r.id).slice(0,8).toUpperCase())}</small>${r.obs?`<small>“${esc(r.obs)}”</small>`:''}</td>
+      <td data-l="Inscrita(o)"><b>${esc(r.nome)}</b>${nova?'<span class="tag nova">NOVA</span>':''}${r.teste?'<span class="tag teste">TESTE</span>':''}<small>${esc(r.cidade)} · CPF ${esc(fmtCpf(r.cpf))}</small>${r.obs?`<small>“${esc(r.obs)}”</small>`:''}</td>
       <td data-l="Contato"><a href="${esc(wa)}" target="_blank" rel="noopener">${esc(r.telefone)}</a><small>${esc(r.email)}</small></td>
       <td data-l="Perfil">${esc(r.perfil)}<small>${esc(r.nivel)}</small></td>
       <td data-l="Valor">${esc(brl(r.valor))}<small>${esc(r.lote)}</small></td>
@@ -362,18 +364,22 @@ $('#btn-atualizar').addEventListener('click', carregar);
 /* ---------- ficha: todos os dados coletados na inscrição, para conferir, corrigir e aprovar ---------- */
 const PERFIS = ['Professora / professor de Educação Infantil','Professora / professor de Ensino Fundamental','Contadora / contador de histórias','Bibliotecária(o) ou mediador(a) de leitura','Outro educador','Mãe, pai ou familiar','Outro'];
 let fichaId = null;
+function cpfOk(c){ c=soDigitos(c); if(c.length!==11 || /^(\d)\1{10}$/.test(c)) return false;
+  const dv = n => { let t=0; for(let i=0;i<n;i++) t+=+c[i]*(n+1-i); const r=(t*10)%11; return r===10?0:r; };
+  return dv(9)===+c[9] && dv(10)===+c[10]; }
+document.addEventListener('input', e=>{ if (e.target.id==='fi-cpf') { let v=soDigitos(e.target.value).slice(0,11); e.target.value = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/,'$1.$2.$3-$4'); } });
 function preencherInfo(r){
   if(!r) return;
   const st = pixParaConferir(r) ? 'Pix para conferir' : r.status;
   const itens = [
-    ['Código', String(r.id).slice(0,8).toUpperCase()], ['Inscrita em', dataBR(r.created_at)],
+    ['Inscrita em', dataBR(r.created_at)],
     ['Lote e valor', `${r.lote||'—'} · ${brl(r.valor)}`], ['Status', st],
     ['Aceite de contato', r.aceite ? 'sim' : 'não'], ['Avisou que pagou', r.pagamento_informado_em ? dataBR(r.pagamento_informado_em) : 'ainda não'],
     ['Pagamento confirmado', r.pagamento_confirmado_em ? dataBR(r.pagamento_confirmado_em) : '—'], ['Teste', r.teste ? 'sim (prévia)' : 'não'],
   ];
   $('#fi-info').innerHTML = itens.map(([k,v])=>`<div><span>${esc(k)}</span>${esc(v)}</div>`).join('')
     + (r.comprovante ? `<div class="full" style="grid-column:1/-1"><button class="btn ghost sm" type="button" data-comp-ficha="${esc(r.comprovante)}">📎 Ver comprovante</button></div>` : '');
-  $('#fi-sub').textContent = `Código ${String(r.id).slice(0,8).toUpperCase()} · ${st}`;
+  $('#fi-sub').textContent = `CPF ${fmtCpf(r.cpf)} · ${st}`;
   $('#fi-aprovar').hidden = r.status!=='pendente';
   $('#fi-cancelar').hidden = r.status==='cancelado';
 }
@@ -381,7 +387,7 @@ function abrirFicha(id){
   const r = linhas.find(x=>x.id===id); if(!r) return;
   fichaId = id; marcarVista(id);
   $('#fi-nome').textContent = r.nome;
-  $('#fi-n').value = r.nome; $('#fi-t').value = r.telefone; $('#fi-e').value = r.email; $('#fi-c').value = r.cidade; $('#fi-o').value = r.obs||'';
+  $('#fi-n').value = r.nome; $('#fi-cpf').value = r.cpf ? fmtCpf(r.cpf) : ''; $('#fi-t').value = r.telefone; $('#fi-e').value = r.email; $('#fi-c').value = r.cidade; $('#fi-o').value = r.obs||'';
   $('#fi-p').innerHTML = [...new Set([...PERFIS, r.perfil])].map(p=>`<option${p===r.perfil?' selected':''}>${esc(p)}</option>`).join('');
   $('#fi-v').value = r.nivel;
   $('#fi-msg').textContent=''; $('#fi-msg').className='msg';
@@ -390,9 +396,11 @@ function abrirFicha(id){
 }
 async function salvarFicha(extra={}){
   const m=$('#fi-msg'); m.className='msg'; m.textContent='';
-  const dados = { nome:$('#fi-n').value.trim(), telefone:$('#fi-t').value.trim(), email:$('#fi-e').value.trim().toLowerCase(), cidade:$('#fi-c').value.trim(),
+  const cpfDig = soDigitos($('#fi-cpf').value);
+  const dados = { nome:$('#fi-n').value.trim(), cpf: cpfDig || null, telefone:$('#fi-t').value.trim(), email:$('#fi-e').value.trim().toLowerCase(), cidade:$('#fi-c').value.trim(),
     perfil:$('#fi-p').value, nivel:$('#fi-v').value, obs:$('#fi-o').value.trim()||null, ...extra };
   if (dados.nome.split(/\s+/).length<2) { m.textContent='Informe nome e sobrenome.'; return false; }
+  if (cpfDig && !cpfOk(cpfDig)) { m.textContent='CPF inválido.'; return false; }
   if (soDigitos(dados.telefone).length<10) { m.textContent='WhatsApp com DDD.'; return false; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(dados.email)) { m.textContent='E-mail inválido.'; return false; }
   if (dados.cidade.length<2) { m.textContent='Informe a cidade.'; return false; }
@@ -419,7 +427,7 @@ $('#btn-excel').addEventListener('click', ()=>{
   if(!rows.length){ toast('Nada para exportar com esse filtro.'); return; }
   const dados = rows.map(r=>({ Data:dataBR(r.created_at), Nome:r.nome, WhatsApp:r.telefone, 'E-mail':r.email, Cidade:r.cidade, Perfil:r.perfil,
     'Já conta histórias?':r.nivel, Observação:r.obs||'', Lote:r.lote, Valor:Number(r.valor||0), Status:r.status, Teste:r.teste?'sim':'',
-    'Código':String(r.id).slice(0,8).toUpperCase(), 'Avisou que pagou':dataBR(r.pagamento_informado_em), 'Comprovante':r.comprovante?'sim':'', 'Pagamento confirmado':dataBR(r.pagamento_confirmado_em), 'Link enviado':dataBR(r.link_enviado_em), 'Certificado emitido':dataBR(r.certificado_emitido_em) }));
+    'CPF':fmtCpf(r.cpf), 'Avisou que pagou':dataBR(r.pagamento_informado_em), 'Comprovante':r.comprovante?'sim':'', 'Pagamento confirmado':dataBR(r.pagamento_confirmado_em), 'Link enviado':dataBR(r.link_enviado_em), 'Certificado emitido':dataBR(r.certificado_emitido_em) }));
   const ws = XLSX.utils.json_to_sheet(dados); ws['!cols'] = Object.keys(dados[0]).map(k=>({ wch: Math.max(12, k.length+2) }));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Inscrições');
   XLSX.writeFile(wb, `pronta-pra-contar-inscricoes-${new Date().toLocaleDateString('sv-SE')}.xlsx`);

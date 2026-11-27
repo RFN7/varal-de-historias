@@ -385,7 +385,7 @@
   </style>
 </head>
 <body>
-<div class="preview-bar" id="preview-bar" hidden>PRÉVIA v6 · comprovante opcional + código da inscrição · grava no banco como TESTE · <a href="../">ver o site atual</a></div>
+<div class="preview-bar" id="preview-bar" hidden>PRÉVIA v7 · CPF na inscrição, comprovante opcional e ficha no painel · grava no banco como TESTE · <a href="../">ver o site atual</a></div>
 
 <div class="last-bar"><b>Última turma de 2026</b> com a Juçara · valor único <b>R$ 85</b> · <a href="#inscricao">garantir minha vaga</a></div>
 <header class="topbar">
@@ -589,8 +589,9 @@
           <h3 class="st"><b>1</b>Seus dados</h3>
           <div class="fgrid">
             <div class="field full"><label for="nome">Nome completo</label><input id="nome" autocomplete="name" placeholder="Como vai sair no certificado" required><span class="err"></span></div>
+            <div class="field"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required><span class="err"></span></div>
             <div class="field"><label for="telefone">WhatsApp</label><input id="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(61) 90000-0000" required><span class="err"></span></div>
-            <div class="field"><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com" required><span class="err"></span></div>
+            <div class="field full"><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com" required><span class="err"></span></div>
             <div class="field full"><label for="cidade">Cidade e estado</label><input id="cidade" autocomplete="address-level2" placeholder="Ex.: Brasília – DF" required><span class="err"></span></div>
           </div>
 
@@ -618,7 +619,6 @@
         <div class="pay" id="pg-pagar" hidden>
           <h3>Falta só o pagamento!</h3>
           <p class="sub" id="pg-ola">Sua inscrição foi recebida.</p>
-          <span class="cod">Código da inscrição <b data-codigo>—</b></span>
           <div class="pay-stage" aria-hidden="true"><svg viewBox="0 0 400 230" aria-hidden="true">
                 <!-- estrelas e letras saindo do livro -->
                 <g id="estrelas">
@@ -672,7 +672,6 @@
         <div class="pay" id="pg-espera" hidden>
           <h3>Recebemos seu aviso!</h3>
           <p class="sub">A equipe do Varal está conferindo o seu Pix.</p>
-          <span class="cod">Código da inscrição <b data-codigo>—</b></span>
           <div class="pay-stage" aria-hidden="true"><svg viewBox="0 0 400 230" aria-hidden="true">
                 <!-- estrelas e letras saindo do livro -->
                 <g id="estrelas">
@@ -715,7 +714,7 @@
               </svg></div>
           <p class="frase" data-frase>Ela abria o livro e as palavras saíam voando…</p>
           <div class="status" role="status"><span>Aguardando a confirmação</span><span class="dots"><i></i><i></i><i></i></span></div>
-          <p class="help" style="margin:0">Pode deixar esta tela aberta: quando a equipe confirmar, ela muda sozinha. Se fechar, guarde o código acima: com ele e o seu e-mail você acompanha a inscrição em "Já se inscreveu?", aqui embaixo.</p>
+          <p class="help" style="margin:0">Pode deixar esta tela aberta: quando a equipe confirmar, ela muda sozinha. Se fechar, é só voltar aqui e usar o seu CPF e e-mail em "Já se inscreveu?", aqui embaixo.</p>
         </div>
         <div class="pay pay-ok" id="pg-ok" hidden>
           <h3>Pagamento confirmado!</h3>
@@ -782,9 +781,9 @@
       </div>
       <div class="acomp" id="acompanhar">
         <h3>Já se inscreveu?</h3>
-        <p>Acompanhe o pagamento e a sua vaga com o código da inscrição e o e-mail que você usou.</p>
+        <p>Acompanhe o pagamento e a sua vaga com o CPF e o e-mail que você usou na inscrição.</p>
         <form class="row" id="f-acomp" novalidate>
-          <div class="field"><label for="a-codigo">Código</label><input id="a-codigo" maxlength="8" autocomplete="off" placeholder="Ex.: 1A2B3C4D" style="text-transform:uppercase"></div>
+          <div class="field"><label for="a-cpf">CPF</label><input id="a-cpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00"></div>
           <div class="field"><label for="a-email">E-mail</label><input id="a-email" type="email" autocomplete="email" placeholder="voce@email.com"></div>
           <button class="btn yellow" type="submit" id="a-btn">Ver minha inscrição</button>
         </form>
@@ -1016,6 +1015,12 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') lb.classList.remo
 /* inscrição */
 const form = $('#signup');
 function setErr(el,msg){ const f=el.closest('.field'); const e=f&&$('.err',f); el.classList.toggle('invalid',!!msg); if(e) e.textContent=msg||''; return !msg; }
+const soNum = v => String(v||'').replace(/\D/g,'');
+const maskCpf = v => { v=soNum(v).slice(0,11); return v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/,'$1.$2.$3-$4'); };
+function cpfValido(c){ c=soNum(c); if(c.length!==11 || /^(\d)\1{10}$/.test(c)) return false;
+  const dv = n => { let t=0; for(let i=0;i<n;i++) t+=+c[i]*(n+1-i); const r=(t*10)%11; return r===10?0:r; };
+  return dv(9)===+c[9] && dv(10)===+c[10]; }
+['#cpf','#a-cpf'].forEach(id=>$(id).addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); }));
 const maskPhone = v => { v=v.replace(/\D/g,'').slice(0,11); return v.length>10 ? v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3') : v.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/,(m,a,b,c)=>(a?'('+a:'')+(a.length===2?') ':'')+b+(c?'-'+c:'')); };
 $('#telefone').addEventListener('input', e=>{ e.target.value = maskPhone(e.target.value); });
 $$('input,select,textarea',form).forEach(el=>el.addEventListener('input',()=>setErr(el,'')));
@@ -1025,6 +1030,7 @@ form.addEventListener('submit', async e=>{
   const nivel = $('input[name="nivel"]:checked', form);
   const ok = [
     setErr($('#nome'), v('nome').split(/\s+/).length<2 ? 'Informe nome e sobrenome' : ''),
+    setErr($('#cpf'), cpfValido(v('cpf')) ? '' : 'CPF inválido'),
     setErr($('#telefone'), v('telefone').replace(/\D/g,'').length<10 ? 'WhatsApp com DDD' : ''),
     setErr($('#email'), /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email')) ? '' : 'E-mail inválido'),
     setErr($('#cidade'), v('cidade') ? '' : 'Informe sua cidade'),
@@ -1054,7 +1060,7 @@ form.addEventListener('submit', async e=>{
   const idInsc = (crypto.randomUUID ? crypto.randomUUID() : null);
   const r = await salvarInscricao({
     ...(idInsc ? { id: idInsc } : {}),
-    nome: v('nome'), telefone: v('telefone'), email: v('email'), cidade: v('cidade'),
+    nome: v('nome'), cpf: soNum(v('cpf')), telefone: v('telefone'), email: v('email'), cidade: v('cidade'),
     perfil: v('perfil'), nivel: nivel.value, obs: v('obs') || null, aceite: true, teste: !!CONFIG.previa,
   });
   btn.disabled = false; btn.textContent = 'Enviar inscrição';
@@ -1102,7 +1108,6 @@ function abrirPagamento(dados, tela, extra={}){
   $('#pg-ola').textContent = pg.nome ? `Sua inscrição foi recebida, ${pg.nome}.` : 'Sua inscrição foi recebida.';
   const cur = CONFIG.lotes[lotStatus().i]; if (cur) $('#pg-valor').textContent = brl(cur.preco);
   $('#pg-chave').textContent = CONFIG.pix;
-  $$('[data-codigo]').forEach(el => el.textContent = String(pg.id).slice(0,8).toUpperCase());
   if (CONFIG.evento) $('#pg-data').textContent = 'Aula ao vivo: ' + $('#hero-data').textContent + '.';
   pgTela(tela);
   $('#pg-'+tela).scrollIntoView({ behavior:'smooth', block:'center' });
@@ -1152,15 +1157,15 @@ $('#pg-paguei').addEventListener('click', async ()=>{
 });
 $('#f-acomp').addEventListener('submit', async e=>{
   e.preventDefault();
-  const codigo = $('#a-codigo').value.trim().toLowerCase(), email = $('#a-email').value.trim().toLowerCase(), err = $('#a-err');
+  const cpf = soNum($('#a-cpf').value), email = $('#a-email').value.trim().toLowerCase(), err = $('#a-err');
   err.textContent = '';
-  if (!/^[0-9a-f]{8}$/.test(codigo)) { err.textContent = 'O código tem 8 letras e números (aparece na tela do Pix).'; return; }
+  if (!cpfValido(cpf)) { err.textContent = 'Digite o CPF usado na inscrição.'; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Digite o e-mail usado na inscrição.'; return; }
   $('#a-btn').disabled = true;
   try {
-    const res = await rpc('varal_buscar_inscricao', { p_codigo: codigo, p_email: email });
+    const res = await rpc('varal_buscar_por_cpf', { p_cpf: cpf, p_email: email });
     const [r] = await res.json();
-    if (!r) { err.textContent = 'Não achamos essa inscrição. Confira o código e o e-mail.'; return; }
+    if (!r) { err.textContent = 'Não achamos essa inscrição. Confira o CPF e o e-mail.'; return; }
     if (r.status === 'cancelado') { err.textContent = 'Essa inscrição foi cancelada. Fale com a equipe no WhatsApp.'; return; }
     abrirPagamento({ id: r.id, email, nome: r.nome }, r.status === 'confirmado' ? 'ok' : (r.informado ? 'espera' : 'pagar'));
   } catch(e2) { err.textContent = 'Não foi possível consultar agora. Tente de novo.'; }
