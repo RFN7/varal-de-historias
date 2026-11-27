@@ -292,9 +292,10 @@ function tempoReal(){
 document.addEventListener('click', ()=>{ try { audio = audio || new (window.AudioContext||window.webkitAudioContext)(); audio.resume(); } catch(e) {} }, { once:false, passive:true });
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ document.title='Painel · Pronta pra Contar'; carregar(); } });
 function filtradas(){
-  const q=$('#busca').value.trim().toLowerCase(), st=$('#f-status').value, testes=$('#f-teste').checked;
+  const q=$('#busca').value.trim().toLowerCase(), qd=soDigitos(q), st=$('#f-status').value, testes=$('#f-teste').checked;
   return linhas.filter(r => (testes || !r.teste) && (!st || r.status===st) &&
-    (!q || [r.nome,r.email,r.cidade,r.telefone,soDigitos(r.telefone),soDigitos(r.cpf)].some(x=>String(x||'').toLowerCase().includes(q))));
+    (!q || [r.nome,r.email,r.cidade,r.telefone].some(x=>String(x||'').toLowerCase().includes(q))
+        || (qd.length>=3 && [soDigitos(r.cpf),soDigitos(r.telefone)].some(x=>x.includes(qd)))));
 }
 function render(){
   const base = linhas.filter(r => $('#f-teste').checked || !r.teste);
