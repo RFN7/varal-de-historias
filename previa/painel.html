@@ -50,6 +50,25 @@
   .st-pix{background:#fff3cd;color:#8a6100;box-shadow:0 0 0 2px var(--yellow) inset}
   tr.pix-row{background:#fffbea}
   .som{display:flex;gap:8px;align-items:center;font-size:13px;opacity:.9}
+  .alerta-nova{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#e6f0fb;border:2px solid var(--teal);border-radius:18px;padding:14px 18px;margin-bottom:12px}
+  .alerta-nova h3{font-size:19px}.alerta-nova p{margin:2px 0 0;font-size:15px}
+  .alerta-nova.novo{animation:chama2 1s ease 3}
+  @keyframes chama2{50%{box-shadow:0 0 0 6px rgba(47,134,181,.45)}}
+  .tag.nova{background:var(--teal);color:#fff;margin-left:4px}
+  tr.nova-row{background:#f1f7fd}
+  dialog.ficha{max-width:640px;width:calc(100% - 24px);padding:0;border-radius:22px}
+  .ficha header{background:var(--blue);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .ficha header h3{font-size:21px;color:#fff}
+  .ficha header small{display:block;color:#c9d3f5;font-size:13px}
+  .ficha .corpo{padding:16px 20px;max-height:62vh;overflow:auto}
+  .ficha .grade{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px}
+  .ficha .grade .full{grid-column:1/-1}
+  .ficha label{margin-top:0}
+  .ficha .info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px;background:#f6f1e6;border-radius:14px;padding:12px 14px;margin-top:14px;font-size:14px}
+  .ficha .info span{color:var(--muted);display:block;font-size:12px;font-weight:800;text-transform:uppercase}
+  .ficha footer{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+  .ficha .x{background:none;border:0;color:#fff;font-size:24px;cursor:pointer;min-width:44px;min-height:44px}
+  @media(max-width:600px){ .ficha .grade,.ficha .info{grid-template-columns:minmax(0,1fr)} }
   .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
   .tools > *{flex:1 1 180px}
   .tools .chk{flex:0 0 auto;display:flex;gap:8px;align-items:center;font-weight:800;font-size:14px;margin:0 0 12px}
@@ -100,6 +119,7 @@
 </section>
 
 <main id="app" hidden><div class="wrap">
+  <div class="alerta-nova" id="alerta-nova" hidden role="alert"><div><h3 id="an-titulo">Nova inscrição</h3><p id="an-txt"></p></div><button class="btn teal" type="button" id="an-ver">Conferir dados</button></div>
   <div class="alerta-pix" id="alerta-pix" hidden role="alert"><div><h3 id="ap-titulo">Pix para conferir</h3><p id="ap-txt"></p></div><button class="btn green" type="button" id="ap-ver">Ver quem pagou</button></div>
   <div class="kpis" id="kpis"></div>
   <div class="tools">
@@ -115,6 +135,27 @@
   </table>
 </div></main>
 
+<dialog class="ficha" id="d-ficha" aria-labelledby="fi-nome">
+  <header><div><h3 id="fi-nome">Ficha da inscrição</h3><small id="fi-sub"></small></div><button class="x" type="button" id="fi-fechar" aria-label="Fechar">×</button></header>
+  <form id="f-ficha" class="corpo" novalidate>
+    <div class="grade">
+      <label class="full">Nome completo (como sai no certificado)<input id="fi-n" maxlength="120" required></label>
+      <label>WhatsApp<input id="fi-t" maxlength="20" required></label>
+      <label>E-mail<input id="fi-e" type="email" maxlength="160" required></label>
+      <label class="full">Cidade e estado<input id="fi-c" maxlength="80" required></label>
+      <label>Perfil<select id="fi-p"></select></label>
+      <label>Já conta histórias?<select id="fi-v"><option>Ainda não, quero começar</option><option>Às vezes, quero melhorar</option><option>Sempre, quero me profissionalizar</option></select></label>
+      <label class="full">Observação<input id="fi-o" maxlength="500"></label>
+    </div>
+    <div class="info" id="fi-info"></div>
+    <div class="msg" id="fi-msg" role="alert"></div>
+  </form>
+  <footer>
+    <button class="btn ghost" type="button" id="fi-salvar">Salvar correções</button>
+    <button class="btn gray" type="button" id="fi-cancelar">Cancelar inscrição</button>
+    <button class="btn green" type="button" id="fi-aprovar">Aprovar (pagamento confirmado)</button>
+  </footer>
+</dialog>
 <dialog id="d-senha"><form method="dialog" id="f-senha">
   <h3 style="margin-bottom:6px">Trocar senha</h3>
   <label>Nova senha (mínimo 8 caracteres)<input id="nova-senha" type="password" minlength="8" autocomplete="new-password"></label>
@@ -205,7 +246,11 @@ $('#d-senha').addEventListener('close', async()=>{
 
 /* ---------- dados ---------- */
 const pixParaConferir = r => r.status==='pendente' && !!r.pagamento_informado_em;
-let jaAvisados = null, audio = null, canal = null;
+let jaAvisados = null, audio = null, canal = null, idsConhecidos = null;
+const VISTAS_KEY = 'varal-painel-vistas';
+let vistas = new Set(); try { vistas = new Set(JSON.parse(localStorage.getItem(VISTAS_KEY)||'[]')); } catch(e) {}
+const marcarVista = id => { vistas.add(id); try { localStorage.setItem(VISTAS_KEY, JSON.stringify([...vistas].slice(-2000))); } catch(e) {} };
+const ehNova = r => r.status==='pendente' && !vistas.has(r.id);
 function bip(){ try { audio = audio || new (window.AudioContext||window.webkitAudioContext)(); [0,.18,.36].forEach((t,i)=>{ const o=audio.createOscillator(), g=audio.createGain(); o.frequency.value=[784,1046,1318][i]; g.gain.setValueAtTime(.18,audio.currentTime+t); g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+t+.3); o.connect(g).connect(audio.destination); o.start(audio.currentTime+t); o.stop(audio.currentTime+t+.32); }); } catch(e) {} }
 async function carregar(){
   const { data, error } = await db.from('varal_inscricoes').select('*').order('created_at', { ascending:false });
@@ -221,7 +266,19 @@ async function carregar(){
     }
   }
   jaAvisados = agora;
+  // nova inscrição (no ato): avisa com som e destaca até o Olavo abrir a ficha
+  const ids = new Set(linhas.map(r=>r.id));
+  if (idsConhecidos) {
+    const chegaram = linhas.filter(r => !idsConhecidos.has(r.id));
+    if (chegaram.length) {
+      bip(); toast(`Nova inscrição: ${chegaram.map(r=>r.nome).join(', ')}`);
+      $('#alerta-nova').classList.remove('novo'); void $('#alerta-nova').offsetWidth; $('#alerta-nova').classList.add('novo');
+      try { if (document.hidden) document.title = '(!) Nova inscrição · Painel'; } catch(e) {}
+    }
+  } else if (!localStorage.getItem(VISTAS_KEY)) { linhas.forEach(r=>marcarVista(r.id)); } // primeiro uso: o que já existe conta como visto
+  idsConhecidos = ids;
   render();
+  if (fichaId && $('#d-ficha').open) preencherInfo(linhas.find(r=>r.id===fichaId));
 }
 function tempoReal(){
   if (canal) return;
@@ -247,6 +304,12 @@ function render(){
     $('#ap-titulo').textContent = aConferir.length===1 ? 'Novo Pix para conferir' : `${aConferir.length} Pix para conferir`;
     $('#ap-txt').textContent = aConferir.map(r=>`${r.nome} (${brl(r.valor)})`).join(', ') + ' avisou que pagou. Confira no extrato e confirme.';
   }
+  const novas = base.filter(ehNova);
+  $('#alerta-nova').hidden = !novas.length;
+  if (novas.length) {
+    $('#an-titulo').textContent = novas.length===1 ? 'Nova inscrição para conferir' : `${novas.length} novas inscrições para conferir`;
+    $('#an-txt').textContent = novas.map(r=>r.nome).join(', ') + '. Abra a ficha, confira os dados e aprove quando o pagamento cair.';
+  }
   $('#kpis').innerHTML = [
     [base.length,'inscrições'],[aConferir.length,'Pix para conferir','pix'],[conta('pendente')-aConferir.length,'aguardando pagamento'],[conta('confirmado'),'confirmadas'],[conta('cancelado'),'canceladas'],[brl(arrecadado),'confirmado em R$','money'],
   ].map(([n,t,c])=>`<div class="kpi ${c||''}"><b>${esc(n)}</b><small>${esc(t)}</small></div>`).join('');
@@ -259,15 +322,15 @@ function render(){
       : r.status==='confirmado'
       ? `${r.link_enviado_em?'':`<button class="btn teal sm" data-a="link" data-id="${esc(r.id)}">Link enviado</button>`}${r.certificado_emitido_em?'':`<button class="btn teal sm" data-a="certificado" data-id="${esc(r.id)}">Certificado emitido</button>`}<button class="btn ghost sm" data-a="pendente" data-id="${esc(r.id)}">Voltar p/ pendente</button>`
       : `<button class="btn ghost sm" data-a="pendente" data-id="${esc(r.id)}">Reabrir</button>`;
-    const pix = pixParaConferir(r);
-    return `<tr class="${pix?'pix-row':''}">
+    const pix = pixParaConferir(r), nova = ehNova(r);
+    return `<tr class="${pix?'pix-row':(nova?'nova-row':'')}">
       <td data-l="Data">${esc(dataBR(r.created_at))}</td>
-      <td data-l="Inscrita(o)"><b>${esc(r.nome)}</b>${r.teste?'<span class="tag teste">TESTE</span>':''}<small>${esc(r.cidade)} · código ${esc(String(r.id).slice(0,8).toUpperCase())}</small>${r.obs?`<small>“${esc(r.obs)}”</small>`:''}</td>
+      <td data-l="Inscrita(o)"><b>${esc(r.nome)}</b>${nova?'<span class="tag nova">NOVA</span>':''}${r.teste?'<span class="tag teste">TESTE</span>':''}<small>${esc(r.cidade)} · código ${esc(String(r.id).slice(0,8).toUpperCase())}</small>${r.obs?`<small>“${esc(r.obs)}”</small>`:''}</td>
       <td data-l="Contato"><a href="${esc(wa)}" target="_blank" rel="noopener">${esc(r.telefone)}</a><small>${esc(r.email)}</small></td>
       <td data-l="Perfil">${esc(r.perfil)}<small>${esc(r.nivel)}</small></td>
       <td data-l="Valor">${esc(brl(r.valor))}<small>${esc(r.lote)}</small></td>
       <td data-l="Status">${pix?`<span class="tag st-pix">Pix para conferir</span><div class="marcos">avisou ${esc(dataBR(r.pagamento_informado_em))}</div>`:`<span class="tag st-${esc(r.status)}">${esc(r.status)}</span>`}${marcos?`<div class="marcos">${esc(marcos)}</div>`:''}${r.comprovante?`<button class="btn ghost sm" style="margin-top:6px" data-comp="${esc(r.comprovante)}">📎 Ver comprovante</button>`:''}</td>
-      <td data-l="Ações"><div class="acoes">${acoes}</div></td></tr>`;
+      <td data-l="Ações"><div class="acoes"><button class="btn ${nova?'teal':'ghost'} sm" data-ficha="${esc(r.id)}">Ver ficha</button>${acoes}</div></td></tr>`;
   }).join('') : `<tr><td colspan="7" class="vazio">${linhas.length?'Nenhuma inscrição com esse filtro.':'Ainda não há inscrições.'}</td></tr>`;
 }
 const ACOES = {
@@ -286,6 +349,7 @@ $('#lista').addEventListener('click', async e=>{
     if(janela) janela.location = data.signedUrl; else location.href = data.signedUrl;
     return;
   }
+  const fb=e.target.closest('[data-ficha]'); if(fb){ abrirFicha(fb.dataset.ficha); return; }
   const b=e.target.closest('[data-a]'); if(!b) return;
   b.disabled=true;
   const { error } = await db.from('varal_inscricoes').update(ACOES[b.dataset.a]()).eq('id', b.dataset.id);
@@ -294,6 +358,61 @@ $('#lista').addEventListener('click', async e=>{
 });
 ['input','change'].forEach(ev=>{ $('#busca').addEventListener(ev,render); $('#f-status').addEventListener(ev,render); $('#f-teste').addEventListener(ev,render); });
 $('#btn-atualizar').addEventListener('click', carregar);
+
+/* ---------- ficha: todos os dados coletados na inscrição, para conferir, corrigir e aprovar ---------- */
+const PERFIS = ['Professora / professor de Educação Infantil','Professora / professor de Ensino Fundamental','Contadora / contador de histórias','Bibliotecária(o) ou mediador(a) de leitura','Outro educador','Mãe, pai ou familiar','Outro'];
+let fichaId = null;
+function preencherInfo(r){
+  if(!r) return;
+  const st = pixParaConferir(r) ? 'Pix para conferir' : r.status;
+  const itens = [
+    ['Código', String(r.id).slice(0,8).toUpperCase()], ['Inscrita em', dataBR(r.created_at)],
+    ['Lote e valor', `${r.lote||'—'} · ${brl(r.valor)}`], ['Status', st],
+    ['Aceite de contato', r.aceite ? 'sim' : 'não'], ['Avisou que pagou', r.pagamento_informado_em ? dataBR(r.pagamento_informado_em) : 'ainda não'],
+    ['Pagamento confirmado', r.pagamento_confirmado_em ? dataBR(r.pagamento_confirmado_em) : '—'], ['Teste', r.teste ? 'sim (prévia)' : 'não'],
+  ];
+  $('#fi-info').innerHTML = itens.map(([k,v])=>`<div><span>${esc(k)}</span>${esc(v)}</div>`).join('')
+    + (r.comprovante ? `<div class="full" style="grid-column:1/-1"><button class="btn ghost sm" type="button" data-comp-ficha="${esc(r.comprovante)}">📎 Ver comprovante</button></div>` : '');
+  $('#fi-sub').textContent = `Código ${String(r.id).slice(0,8).toUpperCase()} · ${st}`;
+  $('#fi-aprovar').hidden = r.status!=='pendente';
+  $('#fi-cancelar').hidden = r.status==='cancelado';
+}
+function abrirFicha(id){
+  const r = linhas.find(x=>x.id===id); if(!r) return;
+  fichaId = id; marcarVista(id);
+  $('#fi-nome').textContent = r.nome;
+  $('#fi-n').value = r.nome; $('#fi-t').value = r.telefone; $('#fi-e').value = r.email; $('#fi-c').value = r.cidade; $('#fi-o').value = r.obs||'';
+  $('#fi-p').innerHTML = [...new Set([...PERFIS, r.perfil])].map(p=>`<option${p===r.perfil?' selected':''}>${esc(p)}</option>`).join('');
+  $('#fi-v').value = r.nivel;
+  $('#fi-msg').textContent=''; $('#fi-msg').className='msg';
+  preencherInfo(r); render();
+  $('#d-ficha').showModal();
+}
+async function salvarFicha(extra={}){
+  const m=$('#fi-msg'); m.className='msg'; m.textContent='';
+  const dados = { nome:$('#fi-n').value.trim(), telefone:$('#fi-t').value.trim(), email:$('#fi-e').value.trim().toLowerCase(), cidade:$('#fi-c').value.trim(),
+    perfil:$('#fi-p').value, nivel:$('#fi-v').value, obs:$('#fi-o').value.trim()||null, ...extra };
+  if (dados.nome.split(/\s+/).length<2) { m.textContent='Informe nome e sobrenome.'; return false; }
+  if (soDigitos(dados.telefone).length<10) { m.textContent='WhatsApp com DDD.'; return false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(dados.email)) { m.textContent='E-mail inválido.'; return false; }
+  if (dados.cidade.length<2) { m.textContent='Informe a cidade.'; return false; }
+  const { error } = await db.from('varal_inscricoes').update(dados).eq('id', fichaId);
+  if (error) { m.textContent = error.code==='23505' ? 'Já existe outra inscrição ativa com este e-mail.' : 'Não foi possível salvar: '+error.message; return false; }
+  await carregar(); return true;
+}
+$('#fi-salvar').addEventListener('click', async ()=>{ if (await salvarFicha()) { $('#fi-msg').className='msg ok'; $('#fi-msg').textContent='Dados corrigidos ✓'; toast('Dados corrigidos ✓'); } });
+$('#fi-aprovar').addEventListener('click', async ()=>{ if (await salvarFicha(ACOES.confirmar())) { toast('Inscrição aprovada ✓ A tela da aluna muda para "vaga garantida".'); $('#d-ficha').close(); } });
+$('#fi-cancelar').addEventListener('click', async ()=>{ if (await salvarFicha(ACOES.cancelar())) { toast('Inscrição cancelada'); $('#d-ficha').close(); } });
+$('#fi-fechar').addEventListener('click', ()=>$('#d-ficha').close());
+$('#d-ficha').addEventListener('close', ()=>{ fichaId=null; render(); });
+$('#fi-info').addEventListener('click', async e=>{
+  const c=e.target.closest('[data-comp-ficha]'); if(!c) return;
+  const janela = window.open('', '_blank');
+  const { data, error } = await db.storage.from('varal-comprovantes').createSignedUrl(c.dataset.compFicha, 300);
+  if(error || !data?.signedUrl){ if(janela) janela.close(); toast('Não foi possível abrir o comprovante.'); return; }
+  if(janela) janela.location = data.signedUrl; else location.href = data.signedUrl;
+});
+$('#an-ver').addEventListener('click', ()=>{ const r = linhas.find(ehNova); if (r) abrirFicha(r.id); });
 $('#ap-ver').addEventListener('click', ()=>{ $('#f-status').value='pendente'; render(); $('#lista').scrollIntoView({behavior:'smooth'}); bip(); });
 $('#btn-excel').addEventListener('click', ()=>{
   const rows = filtradas();
